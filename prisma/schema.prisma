@@ -1,0 +1,66 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Users {
+    id          String         @id @default(uuid())
+    email       String         @unique
+    name        String?
+    password    String?
+    image_url   String?
+    role        Role           @default(USER)
+    Reservation Reservations[]
+    Car         Cars[]
+}
+
+model Parking_slots {
+    id          String        @id @default(uuid())
+    slot_number String        @unique
+    status      ParkingStatus @default(IDLE)
+    created_at  DateTime      @default(now())
+    updated_at  DateTime      @updatedAt
+    reservations Reservations[]
+}
+
+model Reservations {
+    id              String        @id @default(uuid())
+    user_id         String
+    title           String
+    description     String
+    created_at      DateTime      @default(now())
+    start_at        DateTime?
+    end_at          DateTime?
+    updated_at      DateTime      @updatedAt
+    user            Users         @relation(fields: [user_id], references: [id])
+    parking_slot_id String
+    parking_slots   Parking_slots @relation(fields: [parking_slot_id], references: [id])
+}
+
+model Cars {
+    id         String   @id @default(uuid())
+    car_number String   @unique
+    car_model  String
+    car_type   String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    user_id    String
+    user       Users    @relation(fields: [user_id], references: [id])
+}
+
+enum ParkingStatus {
+    IDLE
+    RESERV
+    FULL
+    MAINTENANCE
+}
+
+enum Role {
+    USER
+    ADMIN
+    ENGINEER
+}
