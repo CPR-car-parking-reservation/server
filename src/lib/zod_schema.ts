@@ -3,15 +3,16 @@ import { z } from "zod";
 // Validation of USER
 export const validate_user_create = z
   .object({
-    email: z.string().email({ message: "Invalid email" }),
+    email: z.string().email({ message: 'Invalid email' }),
     password: z
       .string()
-      .min(8, { message: "Password must be atleast 8 characters long" }),
+      .min(8, { message: 'Password must be atleast 8 characters long' }),
     confirm_password: z
       .string()
-      .min(8, { message: "Password must be atleast 8 characters long" }),
+      .min(8, { message: 'Password must be atleast 8 characters long' }),
     name: z.string(),
-    role: z.enum(["ADMIN", "USER"], { message: "Invalid role" }),
+    role: z.enum(['ADMIN', 'USER'], { message: 'Invalid role' }),
+    image: z.instanceof(File),
   })
   .refine((data) => data.password == data.confirm_password, {
     message: "Passwords do not match",
