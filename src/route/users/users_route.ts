@@ -21,6 +21,8 @@ export const users_route = new Elysia({ prefix: '/users' })
 
       const validate = validate_user_create.safeParse(body);
 
+      //console.log(validate);
+
       if (!validate.success) {
         return { message: validate.error.issues[0].message };
       }
