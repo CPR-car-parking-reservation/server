@@ -7,11 +7,14 @@
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.13.4",
+    "bcrypt": "^5.1.1",
     "elysia": "latest",
     "prisma": "^6.3.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
+    "uuid": "^11.0.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
