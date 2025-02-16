@@ -3,8 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { users_route } from './route/users/users_route';
 import { file_route } from './route/file_route';
 import { cars_route } from './route/cars/route';
+import { parking_slots_route } from './route/parking_slots/route';
 
 const app = new Elysia()
+.use(parking_slots_route)
   .use(file_route)
   .use(users_route)
   .use(cars_route)
