@@ -1,6 +1,5 @@
-import Elysia from 'elysia';
 import { PrismaClient } from '@prisma/client';
-import { t } from 'elysia';
+import { t, Elysia } from 'elysia';
 import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 
 export const cars_route = new Elysia({ prefix: '/cars' })

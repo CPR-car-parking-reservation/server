@@ -1,7 +1,6 @@
 import Elysia from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { t } from 'elysia';
-import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 
 export const parking_slots_route = new Elysia({
   prefix: '/parking_slots',

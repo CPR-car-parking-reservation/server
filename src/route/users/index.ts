@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient, Role } from '@prisma/client';
-import { z } from 'zod';
 import { validate_user_create } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import bcrypt from 'bcrypt';
