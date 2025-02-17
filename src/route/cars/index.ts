@@ -1,18 +1,17 @@
-import Elysia from "elysia";
-import { PrismaClient } from "@prisma/client";
-import { t } from "elysia";
-import { validate_car_create, validate_car_update } from "@/lib/zod_schema";
+import Elysia from 'elysia';
+import { PrismaClient } from '@prisma/client';
+import { t } from 'elysia';
+import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 
-export const cars_route = new Elysia({ prefix: "/cars" })
-  .get("/", async () => {
+export const cars_route = new Elysia({ prefix: '/cars' })
+  .get('/', async () => {
     const prisma = new PrismaClient();
     const cars = await prisma.cars.findMany();
     return { cars };
-
   })
 
   .post(
-    "/",
+    '/',
     async ({ body }) => {
       const { car_number, car_model, car_type, user_id } = body;
       const validate = validate_car_create.safeParse(body);
@@ -29,7 +28,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
       });
 
       if (!is_user_exit) {
-        return { message: "User not found", status: 400 };
+        return { message: 'User not found', status: 400 };
       }
 
       const new_car = await prisma.cars.create({
@@ -43,7 +42,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
 
       return {
         data: new_car,
-        message: "Car created successfully",
+        message: 'Car created successfully',
         status: 200,
       };
     },
@@ -58,7 +57,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
   )
 
   .put(
-    "/",
+    '/',
     async ({ body }) => {
       const prisma = new PrismaClient();
       const { car_number, car_model, car_type, car_id } = body;
@@ -71,7 +70,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
       });
 
       if (!this_car) {
-        return { message: "Car not found", status: 400 };
+        return { message: 'Car not found', status: 400 };
       }
 
       const updated_car = await prisma.cars.update({
@@ -85,7 +84,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
         },
       });
 
-      return { massage: "Car updated successfully", status: 200 };
+      return { massage: 'Car updated successfully', status: 200 };
     },
     {
       body: t.Object({
@@ -97,7 +96,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
     }
   )
   .delete(
-    "/id/:car_id",
+    '/id/:car_id',
     async ({ params }) => {
       const prisma = new PrismaClient();
       const { car_id } = await params;
@@ -111,7 +110,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
 
       if (!car) {
         return {
-          message: "Car not found",
+          message: 'Car not found',
           status: 400,
         };
       }
@@ -123,7 +122,7 @@ export const cars_route = new Elysia({ prefix: "/cars" })
       });
 
       return {
-        message: "Car deleted successfully",
+        message: 'Car deleted successfully',
         status: 200,
       };
     },

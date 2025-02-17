@@ -24,7 +24,6 @@ model Parking_slots {
     status      ParkingStatus @default(IDLE)
     created_at  DateTime      @default(now())
     updated_at  DateTime      @updatedAt
-    sensor_dist Float?
     reservations Reservations[]
 }
 

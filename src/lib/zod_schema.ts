@@ -4,12 +4,8 @@ import { z } from 'zod';
 export const validate_user_create = z
   .object({
     email: z.string().email({ message: 'Invalid email' }),
-    password: z
-      .string()
-      .min(8, { message: 'Password must be atleast 8 characters long' }),
-    confirm_password: z
-      .string()
-      .min(8, { message: 'Password must be atleast 8 characters long' }),
+    password: z.string().min(8, { message: 'Password must be atleast 8 characters long' }),
+    confirm_password: z.string().min(8, { message: 'Password must be atleast 8 characters long' }),
     name: z.string().min(3, { message: 'Name cannot be empty' }),
     role: z.enum(['ADMIN', 'USER'], { message: 'Invalid role' }),
     image: z.instanceof(File),
