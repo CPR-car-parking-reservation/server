@@ -54,6 +54,7 @@ model Cars {
     car_number String   @unique
     car_model  String
     car_type   String
+    image_url  String
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
     user_id    String
