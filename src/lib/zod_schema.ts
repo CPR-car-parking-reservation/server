@@ -35,20 +35,32 @@ export const validate_car_update = z.object({
 });
 
 // Validation of PARKING SLOT
-export const validate_create_parking = z.object({
+export const validate_create_parking_slot = z.object({
   slot_number: z.string().min(1, { message: 'Slot number cannot be empty' }),
   status: z.enum(['IDLE', 'ACTIVE', 'INACTIVE'], { message: 'Invalid status' }),
+  floor_id: z.string().min(1, { message: 'floor id cannot be empty' }),
 });
 
-export const validate_update_parking = z.object({
+export const validate_update_parking_slot = z.object({
   slot_number: z.string().min(1, { message: 'Slot number cannot be empty' }),
   status: z.enum(['IDLE', 'ACTIVE', 'INACTIVE'], { message: 'Invalid status' }),
   slot_id: z.string({ message: 'Invalid slot id' }),
+  floor_id: z.string().min(1, { message: 'floor id cannot be empty' }),
 });
 
 // Validation of RESERVATION
-export const validate_reserv_praking = z.object({
+export const validate_reservation_praking = z.object({
+  user_id: z.string({ message: 'Invalid user id' }),
+  car_id: z.string({ message: 'Invalid car id' }),
   parking_slot_id: z.string({ message: 'Invalid parking slot id' }),
-  start_time: z.string({ message: 'Invalid start time' }),
-  end_time: z.string({ message: 'Invalid end time' }),
+  start_time: z.date({ message: 'Invalid start time' }),
+});
+
+// Validation of FLOOR
+export const validate_create_floor = z.object({
+  floor_number: z.string().min(1, { message: 'Floor number cannot be empty' }),
+});
+
+export const validate_update_floor = z.object({
+  floor_number: z.string().min(1, { message: 'Floor number cannot be empty' }),
 });

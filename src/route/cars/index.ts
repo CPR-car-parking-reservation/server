@@ -39,6 +39,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         },
       });
 
+      console.log(new_car);
       return {
         data: new_car,
         message: 'Car created successfully',
@@ -105,7 +106,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         },
       });
 
-      console.log(car);
+      //console.log(car);
 
       if (!car) {
         return {

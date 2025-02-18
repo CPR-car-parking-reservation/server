@@ -18,13 +18,23 @@ model Users {
     Car         Cars[]
 }
 
+model Floor {
+    id            String          @id @default(uuid())
+    floor_number  String          @unique
+    created_at    DateTime        @default(now())
+    updated_at    DateTime        @updatedAt
+    parking_slots Parking_slots[]
+}
+
 model Parking_slots {
-    id          String        @id @default(uuid())
-    slot_number String        @unique
-    status      ParkingStatus @default(IDLE)
-    created_at  DateTime      @default(now())
-    updated_at  DateTime      @updatedAt
+    id           String         @id @default(uuid())
+    slot_number  String         @unique
+    status       ParkingStatus  @default(IDLE)
+    created_at   DateTime       @default(now())
+    updated_at   DateTime       @updatedAt
     reservations Reservations[]
+    floor_id     String
+    floor        Floor          @relation(fields: [floor_id], references: [id])
 }
 
 model Reservations {
@@ -52,7 +62,7 @@ model Cars {
 
 enum ParkingStatus {
     IDLE
-    RESERV
+    RESERVED
     FULL
     MAINTENANCE
 }
