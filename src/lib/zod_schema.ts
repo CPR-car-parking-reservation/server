@@ -25,6 +25,7 @@ export const validate_car_create = z.object({
   car_type: z.string().min(1, { message: 'Car type cannot be empty' }),
   car_number: z.string().min(1, { message: 'Car number cannot be empty' }),
   user_id: z.string({ message: 'Invalid user id' }),
+  image: z.instanceof(File),
 });
 
 export const validate_car_update = z.object({

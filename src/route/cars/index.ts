@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { t, Elysia } from 'elysia';
 import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
+import { upload_file } from '@/lib/upload_file';
 
 export const cars_route = new Elysia({ prefix: '/cars' })
   .get('/', async () => {
@@ -30,12 +31,18 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         return { message: 'User not found', status: 400 };
       }
 
+      const upload_result = await upload_file(body.image);
+      if (upload_result.status === 'error') {
+        return { message: upload_result.message };
+      }
+
       const new_car = await prisma.cars.create({
         data: {
           car_number,
           car_model,
           car_type,
           user_id,
+          image_url: upload_result.url as string,
         },
       });
 
@@ -52,6 +59,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         car_model: t.String(),
         car_type: t.String(),
         user_id: t.String(),
+        image: t.File(),
       }),
     }
   )
