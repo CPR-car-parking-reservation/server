@@ -4,11 +4,31 @@ import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 
 export const cars_route = new Elysia({ prefix: '/cars' })
-  .get('/', async () => {
-    const prisma = new PrismaClient();
-    const cars = await prisma.cars.findMany();
-    return { cars };
-  })
+  //add return type to swagger
+  .get(
+    '/',
+    async () => {
+      const prisma = new PrismaClient();
+      const cars = await prisma.cars.findMany();
+      return { data: cars, status: 200 };
+    },
+    {
+      response: {
+        200: t.Object({
+          data: t.Array(
+            t.Object({
+              id: t.String(),
+              car_number: t.String(),
+              car_model: t.String(),
+              car_type: t.String(),
+              user_id: t.String(),
+              image_url: t.String(),
+            })
+          ),
+        }),
+      },
+    }
+  )
 
   .post(
     '/',
@@ -21,7 +41,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       }
 
       const prisma = new PrismaClient();
-      const is_user_exit = await prisma.users.findFirst({
+      const is_user_exit = await prisma.users.findUnique({
         where: {
           id: user_id,
         },
@@ -92,7 +112,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         },
       });
 
-      return { massage: 'Car updated successfully', status: 200 };
+      return { massage: 'Car updated successfully', data: updated_car, status: 200 };
     },
     {
       body: t.Object({

@@ -8,7 +8,11 @@ export const parking_slots_route = new Elysia({
 })
   .get('/', async () => {
     const prima = new PrismaClient();
-    const parking_slots = await prima.parking_slots.findMany();
+    const parking_slots = await prima.parking_slots.findMany({
+      include: {
+        floor: true,
+      },
+    });
 
     return { data: parking_slots, status: 200 };
   })
