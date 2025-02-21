@@ -33,6 +33,10 @@ client.on('message', (topic, message) => {
 });
 // สร้าง route สำหรับ /broker
 const app = new Elysia()
+  // .onError(({ code, error }) => {
+  //   console.log(error);
+  //   return { message: 'Internal Server error', status: code };
+  // })
   .use(
     swagger({
       provider: 'swagger-ui',
