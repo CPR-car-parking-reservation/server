@@ -6,7 +6,7 @@ import { cars_route } from '@/route/cars';
 import { parking_slots_route } from '@/route/parking_slots';
 import swagger from '@elysiajs/swagger';
 import { reservation_route } from './route/reserv';
-import aedes from 'aedes';
+
 import { createServer } from 'net';
 
 import mqtt from 'mqtt';
