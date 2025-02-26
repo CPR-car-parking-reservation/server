@@ -7,6 +7,8 @@ import {
   validate_get_parking_slot,
 } from '@/lib/zod_schema';
 
+const prisma = new PrismaClient();
+
 export const parking_slots_route = new Elysia({
   prefix: '/parking_slots',
 })
@@ -14,15 +16,14 @@ export const parking_slots_route = new Elysia({
     '/',
     async ({ query }) => {
       try {
-        const prima = new PrismaClient();
         const { slot_number, floor, status } = query;
-        const this_floor = await prima.floor.findUnique({
+        const this_floor = await prisma.floor.findUnique({
           where: {
             floor_number: floor,
           },
         });
 
-        const parking_slots = await prima.parking_slots.findMany({
+        const parking_slots = await prisma.parking_slots.findMany({
           where: {
             slot_number: slot_number,
             floor_id: this_floor?.id,
@@ -61,8 +62,6 @@ export const parking_slots_route = new Elysia({
         if (!validated_parking_slots.success) {
           return { message: validated_parking_slots.error.issues[0].message };
         }
-
-        const prisma = new PrismaClient();
 
         const is_slot_number = await prisma.parking_slots.findUnique({
           where: {
@@ -114,8 +113,6 @@ export const parking_slots_route = new Elysia({
           return { message: validated_parking_slots.error.issues[0].message };
         }
 
-        const prisma = new PrismaClient();
-
         const is_slot_number = await prisma.parking_slots.findUnique({
           where: {
             id: parking_slot_id,
@@ -160,7 +157,6 @@ export const parking_slots_route = new Elysia({
     '/id/:parking_slot_id',
     async ({ params }) => {
       try {
-        const prisma = new PrismaClient();
         const { parking_slot_id } = await params;
         const is_parking_slot = await prisma.parking_slots.findUnique({
           where: {
