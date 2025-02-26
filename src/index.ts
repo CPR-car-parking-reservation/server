@@ -7,7 +7,7 @@ import swagger from '@elysiajs/swagger';
 import { reservation_route } from '@/route/reserv';
 import { floor_route } from '@/route/floor';
 
-import '@/mqtt/handler';
+// import '@/mqtt/handler';
 const app = new Elysia()
   .onError(({ code, error }) => {
     console.log(error);
