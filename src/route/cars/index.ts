@@ -156,6 +156,15 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           return { message: 'Car not found', status: 400 };
         }
 
+        if (!validate.success) {
+          return { message: validate.error.issues[0].message };
+        }
+
+        const upload_result = await upload_file(body.image);
+        if (upload_result.status === 'error') {
+          return { message: upload_result.message };
+        }
+
         const updated_car = await prisma.cars.update({
           where: {
             id: car_id,
@@ -164,6 +173,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
             car_number,
             car_model,
             car_type,
+            image_url: upload_result ? upload_result.url : this_car.image_url,
           },
         });
 
@@ -178,6 +188,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         car_model: t.String(),
         car_type: t.String(),
         car_id: t.String(),
+        image: t.File(),
       }),
     }
   )

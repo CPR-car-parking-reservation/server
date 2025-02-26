@@ -33,6 +33,7 @@ export const validate_car_update = z.object({
   car_type: z.string().min(1, { message: 'Car type cannot be empty' }),
   car_number: z.string().min(1, { message: 'Car number cannot be empty' }),
   car_id: z.string({ message: 'Invalid car id' }),
+  image: z.instanceof(File).optional(),
 });
 
 // Validation of PARKING SLOT
