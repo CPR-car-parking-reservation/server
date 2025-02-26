@@ -139,11 +139,14 @@ export const cars_route = new Elysia({ prefix: '/cars' })
   )
 
   .put(
-    '/',
-    async ({ body }) => {
+    '/id/:car_id',
+    async ({ body , params}) => {
       try {
+        console.log("body", body);
+        console.log("params", params);
         const prisma = new PrismaClient();
-        const { car_number, car_model, car_type, car_id } = body;
+        const { car_id } = await params;
+        const { car_number, car_model, car_type } = body;
         const validate = validate_car_update.safeParse(body);
 
         const this_car = await prisma.cars.findFirst({
@@ -157,7 +160,22 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         }
 
         if (!validate.success) {
-          return { message: validate.error.issues[0].message };
+          return { message: validate.error.issues[0].message , status: 400};
+        }
+
+        if (body.image === null || body.image === undefined) {
+          const new_car = await prisma.cars.update({
+            where: {
+              id: car_id,
+            },
+            data: {
+              car_number,
+              car_model,
+              car_type,
+            },
+          });
+          return { message: 'Car updated successfully', data: new_car, status: 200 };
+
         }
 
         const upload_result = await upload_file(body.image);
@@ -187,8 +205,11 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         car_number: t.String(),
         car_model: t.String(),
         car_type: t.String(),
+        image : t.Optional(t.File())
+        // image: t.File() || t.Null(),
+      }),
+      params: t.Object({
         car_id: t.String(),
-        image: t.File(),
       }),
     }
   )
