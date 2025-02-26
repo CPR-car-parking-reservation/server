@@ -1,42 +1,55 @@
 import Elysia from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { t } from 'elysia';
-import { validate_create_parking_slot, validate_update_parking_slot } from '@/lib/zod_schema';
+import {
+  validate_create_parking_slot,
+  validate_update_parking_slot,
+  validate_get_parking_slot,
+} from '@/lib/zod_schema';
 
 export const parking_slots_route = new Elysia({
   prefix: '/parking_slots',
 })
-  .get('/', async () => {
-    try {
-      console.log('has been callessd');
-      const prima = new PrismaClient();
-      const parking_slots = await prima.parking_slots.findMany({
-        //sort by slot number
-        orderBy: {
-          slot_number: 'asc',
-        },
-        include: {
-          floor: true,
-        },
-        
-      });
+  .get(
+    '/',
+    async ({ query }) => {
+      try {
+        const prima = new PrismaClient();
+        const { slot_number, floor, status } = query;
+        const this_floor = await prima.floor.findUnique({
+          where: {
+            floor_number: floor,
+          },
+        });
 
-      return { data: parking_slots, status: 200 };
-    } catch (e: any) {
-      return { message: 'Internal Server Error' };
-    }
-  })
-  .get('/not_include_floor', async () => {
-    try {
-      console.log('has been called');
-      const prima = new PrismaClient();
-      const parking_slots = await prima.parking_slots.findMany({});
+        const parking_slots = await prima.parking_slots.findMany({
+          where: {
+            slot_number: slot_number,
+            floor_id: this_floor?.id,
+            status: status as ParkingStatus,
+          },
+          orderBy: {
+            slot_number: 'asc',
+          },
+          include: {
+            floor: true,
+          },
+        });
 
-      return { data: parking_slots, status: 200 };
-    } catch (e: any) {
-      return { message: 'Internal Server Error' };
+        return { data: parking_slots, status: 200 };
+      } catch (e: any) {
+        return { message: 'Internal Server Error' };
+      }
+    },
+    {
+      query: t.Object({
+        slot_number: t.Optional(t.String()),
+        floor: t.Optional(t.String()),
+        status: t.Optional(t.String()),
+      }),
     }
-  })
+  )
+
   .post(
     '/',
     async ({ body }) => {

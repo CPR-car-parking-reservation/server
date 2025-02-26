@@ -43,6 +43,12 @@ export const validate_create_parking_slot = z.object({
   floor_id: z.string().min(1, { message: 'floor id cannot be empty' }),
 });
 
+export const validate_get_parking_slot = z.object({
+  slot_number: z.string().optional(),
+  floor_id: z.string().optional(),
+  status: z.enum(['IDLE', 'FULL', 'RESERVED', 'MAINTENANCE']).optional(),
+});
+
 export const validate_update_parking_slot = z.object({
   slot_number: z.string().min(1, { message: 'Slot number cannot be empty' }),
   status: z.enum(['IDLE', 'ACTIVE', 'INACTIVE'], { message: 'Invalid status' }),
