@@ -20,17 +20,17 @@ export const parking_slots_route = new Elysia({
 
         const filters: any = {};
 
-        if (slot_number) {
+        if (slot_number || slot_number != 'null') {
           filters.slot_number = slot_number;
         }
 
-        if (floor) {
+        if (floor || floor != 'null') {
           filters.floor = {
             floor_number: floor,
           };
         }
 
-        if (status) {
+        if (status || status != 'null') {
           filters.status = status as ParkingStatus; // ตรวจสอบให้แน่ใจว่า status เป็นค่าที่อยู่ใน enum ParkingStatus
         }
 
