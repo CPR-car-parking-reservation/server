@@ -11,9 +11,14 @@ export const parking_slots_route = new Elysia({
       console.log('has been callessd');
       const prima = new PrismaClient();
       const parking_slots = await prima.parking_slots.findMany({
+        //sort by slot number
+        orderBy: {
+          slot_number: 'asc',
+        },
         include: {
           floor: true,
         },
+        
       });
 
       return { data: parking_slots, status: 200 };
