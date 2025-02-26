@@ -5,8 +5,12 @@ import { validate_reservation_praking } from '@/lib/zod_schema';
 export const reservation_route = new Elysia({ prefix: '/reservation' })
   .get('/', async () => {
     const prisma = new PrismaClient();
-    const reservation = await prisma.reservations.findMany();
-    return { reservation };
+    const reservation = await prisma.reservations.findMany({
+      include: {
+        parking_slots: true,
+      },
+    });
+    return { data: reservation, status: 200 };
   })
   // .post(
   //   '/',
@@ -40,36 +44,40 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         return { message: validate.error.issues[0].message, status: 400 };
       }
 
-      // const this_slot = await prisma.parking_slots.findUnique({
-      //   where: {
-      //     id: parking_slot_id,
-      //     status: ParkingStatus.IDLE,
-      //   },
-      // });
+      const this_slot = await prisma.parking_slots.findUnique({
+        where: {
+          id: parking_slot_id,
+          status: ParkingStatus.IDLE,
+        },
+      });
 
-      // if (!this_slot) {
-      //   return { message: 'This slot is not available ', status: 400 };
-      // }
+      if (!this_slot) {
+        return { message: 'This slot is not available ', status: 400 };
+      }
 
-      // const user = await prisma.users.findUnique({
-      //   where: {
-      //     id: user_id,
-      //   },
-      // });
+      const user = await prisma.users.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
 
-      // if (!user) {
-      //   return { message: 'User not found', status: 400 };
-      // }
+      if (!user) {
+        return { message: 'User not found', status: 400 };
+      }
 
-      // const car = await prisma.cars.findUnique({
-      //   where: {
-      //     id: car_id,
-      //   },
-      // });
+      const car = await prisma.cars.findUnique({
+        where: {
+          id: car_id,
+        },
+      });
 
-      // if (!car) {
-      //   return { message: 'Car not found', status: 400 };
-      // }
+      if (!car) {
+        return { message: 'Car not found', status: 400 };
+      }
+      console.log('user_id', user_id);
+      console.log('car_id', car_id);
+      console.log('parking_slot_id', parking_slot_id);
+      console.log('start_at', start_at);
 
       const new_reserv = await prisma.reservations.create({
         data: {
