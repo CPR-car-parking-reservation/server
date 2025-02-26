@@ -25,9 +25,19 @@ export const parking_slots_route = new Elysia({
 
         const parking_slots = await prisma.parking_slots.findMany({
           where: {
-            slot_number: slot_number,
-            floor_id: this_floor?.id,
-            status: status as ParkingStatus,
+            OR: [
+              {
+                slot_number: {
+                  contains: slot_number,
+                },
+              },
+              {
+                floor_id: this_floor?.id,
+              },
+              {
+                status: status as ParkingStatus,
+              },
+            ],
           },
           orderBy: {
             slot_number: 'asc',
