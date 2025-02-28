@@ -16,22 +16,22 @@ export const parking_slots_route = new Elysia({
     '/',
     async ({ query }) => {
       try {
-        const { slot_number, floor, status } = query;
+        const { search, floor, status } = query;
         console.log(query);
 
         const filters: any = {};
 
-        if (slot_number ) {
-          filters.slot_number = slot_number;
+        if (search) {
+          filters.slot_number = search;
         }
 
-        if (floor ) {
+        if (floor) {
           filters.floor = {
             floor_number: floor,
           };
         }
 
-        if (status ) {
+        if (status) {
           filters.status = status as ParkingStatus; // ตรวจสอบให้แน่ใจว่า status เป็นค่าที่อยู่ใน enum ParkingStatus
         }
 
@@ -53,7 +53,6 @@ export const parking_slots_route = new Elysia({
     {
       query: t.Object({
         search: t.Optional(t.String()),
-        slot_number: t.Optional(t.String()),
         floor: t.Optional(t.String()),
         status: t.Optional(t.String()),
       }),
