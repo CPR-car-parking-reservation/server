@@ -22,7 +22,9 @@ export const parking_slots_route = new Elysia({
         const filters: any = {};
 
         if (search) {
-          filters.slot_number = search;
+          filters.slot_number = {
+            contains: search,
+          };
         }
 
         if (floor) {
