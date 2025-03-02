@@ -8,7 +8,7 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
   '/',
   async ({ body }) => {
     try {
-      const { email, password, confirm_password, name } = body;
+      const { email, password, confirm_password, surname, name } = body;
       const validate = validate_user_create.safeParse(body);
 
       //console.log(validate);
@@ -33,7 +33,7 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
           email,
           password: hashed_password,
           name,
-
+          surname,
           image_url: '/file/account-default.png',
         },
       });
@@ -53,6 +53,7 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
       password: t.String(),
       confirm_password: t.String(),
       name: t.String(),
+      surname: t.String(),
     }),
   }
 );

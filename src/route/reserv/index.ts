@@ -1,10 +1,12 @@
 import { Elysia, t } from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { validate_reservation_praking } from '@/lib/zod_schema';
+import { middleware } from '@/lib/auth';
+const prisma = new PrismaClient();
 
 export const reservation_route = new Elysia({ prefix: '/reservation' })
+  .use(middleware)
   .get('/', async () => {
-    const prisma = new PrismaClient();
     const reservation = await prisma.reservations.findMany({
       include: {
         parking_slots: true,
@@ -31,9 +33,11 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
 
   .post(
     '/',
-    async ({ body }) => {
-      const prisma = new PrismaClient();
-      const { car_id, parking_slot_id, start_at, user_id } = body;
+    async ({ body, auth_user }) => {
+      if (!auth_user) {
+        return { message: 'Unauthorized', status: 401 };
+      }
+      const { car_id, parking_slot_id, start_at } = body;
 
       const start_at_date = new Date(start_at);
       console.log('start_at_date', start_at_date);
@@ -57,7 +61,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
 
       const user = await prisma.users.findUnique({
         where: {
-          id: user_id,
+          id: auth_user.id,
         },
       });
 
@@ -74,15 +78,16 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       if (!car) {
         return { message: 'Car not found', status: 400 };
       }
-      console.log('user_id', user_id);
+      console.log('user_id', auth_user.id);
       console.log('car_id', car_id);
       console.log('parking_slot_id', parking_slot_id);
       console.log('start_at', start_at);
 
       const new_reserv = await prisma.reservations.create({
         data: {
-          user_id,
+          user_id: auth_user.id,
           parking_slot_id,
+          car_id,
           start_at: start_at_date,
         },
       });
@@ -108,7 +113,6 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
     },
     {
       body: t.Object({
-        user_id: t.String(),
         car_id: t.String(),
         parking_slot_id: t.String(),
         start_at: t.String(),

@@ -1,5 +1,5 @@
 import { PrismaClient, Role, ParkingStatus } from '@prisma/client';
-
+import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -14,39 +14,52 @@ async function main() {
   const users_create = await prisma.users.createMany({
     data: [
       {
-        email: 'alice@example.com',
-        name: 'Alice',
-        password: 'password',
-        image_url: '',
+        email: 'user',
+        name: 'User',
+        surname: 'User',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
         role: Role.USER,
       },
       {
-        email: 'bob@example.com',
-        name: 'Bob',
-        password: 'password',
-        image_url: '',
+        email: 'user2',
+        name: 'User2',
+        surname: 'User2',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
         role: Role.USER,
       },
       {
-        email: 'carol@example.com',
-        name: 'Carol',
-        password: 'password',
-        image_url: '',
+        email: 'user3',
+        name: 'User3',
+        surname: 'User3',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
         role: Role.USER,
       },
       {
-        email: 'admin@example.com',
+        email: 'user4',
+        name: 'User4',
+        surname: 'User4',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
+        role: Role.USER,
+      },
+      {
+        email: 'user5',
+        name: 'User5',
+        surname: 'User5',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
+        role: Role.USER,
+      },
+      {
+        email: 'admin',
         name: 'Admin',
-        password: 'adminpassword',
-        image_url: '',
+        surname: 'Admin',
+        password: await bcrypt.hash('12345678', 10),
+        image_url: '/file/account-default.png',
         role: Role.ADMIN,
-      },
-      {
-        email: 'engineer@example.com',
-        name: 'Engineer',
-        password: 'engpassword',
-        image_url: '',
-        role: Role.ENGINEER,
       },
     ],
   });
@@ -60,11 +73,6 @@ async function main() {
       { floor_number: 'F3' },
       { floor_number: 'F4' },
       { floor_number: 'F5' },
-      { floor_number: 'F6' },
-      { floor_number: 'F7' },
-      { floor_number: 'F8' },
-      { floor_number: 'F9' },
-      { floor_number: 'F10' },
     ],
   });
 
@@ -83,17 +91,6 @@ async function main() {
   });
 
   const users = await prisma.users.findMany();
-  const parkingSlots = await prisma.parking_slots.findMany();
-  // Mock Reservations
-  const reservations = await prisma.reservations.createMany({
-    data: [
-      { user_id: users[0].id, parking_slot_id: parkingSlots[0].id },
-      { user_id: users[1].id, parking_slot_id: parkingSlots[1].id },
-      { user_id: users[2].id, parking_slot_id: parkingSlots[2].id },
-      { user_id: users[3].id, parking_slot_id: parkingSlots[3].id },
-      { user_id: users[4].id, parking_slot_id: parkingSlots[4].id },
-    ],
-  });
 
   // Mock Cars
   const cars = await prisma.cars.createMany({
@@ -110,29 +107,70 @@ async function main() {
         car_model: 'Honda Civic',
         car_type: 'Sedan',
         image_url: '/file/5de54d45-ee40-41db-a422-f0bb9df2b63b-18-1.png',
-        user_id: users[1].id,
+        user_id: users[0].id,
       },
       {
         car_number: 'CD3456EF',
         car_model: 'Ford Focus',
         car_type: 'Hatchback',
         image_url: '/file/14b6876f-750d-446f-9a43-06c9210aed75-18-1.png',
-        user_id: users[2].id,
+        user_id: users[0].id,
       },
       {
         car_number: 'DE4567FG',
         car_model: 'BMW 320i',
         car_type: 'Sedan',
         image_url: '/file/14b6876f-750d-446f-9a43-06c9210aed75-18-1.png',
-        user_id: users[3].id,
+        user_id: users[0].id,
       },
       {
         car_number: 'EF5678GH',
         car_model: 'Audi A4',
         car_type: 'Sedan',
         image_url: '/file/4d0bfd62-bd02-47a3-9faa-de4dcb505b5d-18-1.png',
-        user_id: users[4].id,
+        user_id: users[1].id,
       },
+      {
+        car_number: 'FG6789HI',
+        car_model: 'Mazda 3',
+        car_type: 'Hatchback',
+        image_url: '/file/5de54d45-ee40-41db-a422-f0bb9df2b63b-18-1.png',
+        user_id: users[1].id,
+      },
+      {
+        car_number: 'GH7890IJ',
+        car_model: 'Mazda 3',
+        car_type: 'Hatchback',
+        image_url: '/file/5de54d45-ee40-41db-a422-f0bb9df2b63b-18-1.png',
+        user_id: users[1].id,
+      },
+      {
+        car_number: 'HI8901JK',
+        car_model: 'Mazda 3',
+        car_type: 'Hatchback',
+        image_url: '/file/5de54d45-ee40-41db-a422-f0bb9df2b63b-18-1.png',
+        user_id: users[1].id,
+      },
+      {
+        car_number: 'IJ9012KL',
+        car_model: 'Mazda 3',
+        car_type: 'Hatchback',
+        image_url: '/file/5de54d45-ee40-41db-a422-f0bb9df2b63b-18-1.png',
+        user_id: users[1].id,
+      },
+    ],
+  });
+
+  const parkingSlots = await prisma.parking_slots.findMany();
+  const fetch_cars = await prisma.cars.findMany();
+  // Mock Reservations
+  const reservations = await prisma.reservations.createMany({
+    data: [
+      { user_id: users[0].id, parking_slot_id: parkingSlots[0].id, car_id: fetch_cars[0].id },
+      { user_id: users[1].id, parking_slot_id: parkingSlots[1].id, car_id: fetch_cars[0].id },
+      { user_id: users[2].id, parking_slot_id: parkingSlots[2].id, car_id: fetch_cars[0].id },
+      { user_id: users[3].id, parking_slot_id: parkingSlots[3].id, car_id: fetch_cars[0].id },
+      { user_id: users[4].id, parking_slot_id: parkingSlots[4].id, car_id: fetch_cars[0].id },
     ],
   });
 

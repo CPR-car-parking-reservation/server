@@ -18,6 +18,9 @@ export const users_route = new Elysia({ prefix: '/profile' })
       }
 
       const user = await prisma.users.findUnique({
+        omit: {
+          password: true,
+        },
         where: {
           id: auth_user.id,
         },
@@ -33,6 +36,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
     }
   })
   .get('/cars', async ({ set, request, auth_user }) => {
+    console.log('auth_user in carsss', auth_user);
     try {
       if (!auth_user) {
         set.status = 401;
@@ -40,7 +44,10 @@ export const users_route = new Elysia({ prefix: '/profile' })
       }
 
       const user = await prisma.users.findUnique({
-        include: { Car: true },
+        include: { car: true },
+        omit: {
+          password: true,
+        },
         where: {
           id: auth_user.id,
         },
@@ -75,7 +82,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           return { message: 'User not found', status: 404 };
         }
 
-        const { name, image } = body;
+        const { name, surname, image } = body;
         const validate = validate_user_update.safeParse(body);
         if (!validate.success) {
           set.status = 400;
@@ -89,10 +96,11 @@ export const users_route = new Elysia({ prefix: '/profile' })
             },
             data: {
               name,
+              surname,
             },
           });
           set.status = 200;
-          return { data: update_user, status: 200 };
+          return { data: update_user, message: 'User updated successfully', status: 200 };
         }
 
         const upload_result = await upload_file(body.image);
@@ -100,17 +108,18 @@ export const users_route = new Elysia({ prefix: '/profile' })
           return { message: upload_result.message };
         }
 
-        const user = await prisma.users.update({
+        const update_user = await prisma.users.update({
           where: {
             id: auth_user.id,
           },
           data: {
             name,
+            surname,
             image_url: upload_result ? upload_result.url : this_user.image_url,
           },
         });
         set.status = 200;
-        return { data: user, status: 200 };
+        return { data: update_user, message: 'User updated successfully', status: 200 };
       } catch (e: any) {
         set.status = 500;
         return { message: 'Internal Server Error', status: 500 };
@@ -119,13 +128,15 @@ export const users_route = new Elysia({ prefix: '/profile' })
     {
       body: t.Object({
         name: t.String(),
+        surname: t.String(),
         image: t.Optional(t.File()),
       }),
     }
   )
-  .post(
+  .put(
     '/reset_password',
     async ({ set, auth_user, body }) => {
+      console.log('auth_user resettt', auth_user);
       try {
         if (!auth_user) {
           set.status = 401;

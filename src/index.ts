@@ -8,7 +8,8 @@ import { reservation_route } from '@/route/reserv';
 import { floor_route } from '@/route/floor';
 import { register_route } from './route/auth/register';
 import { login_route } from './route/auth/login';
-import { admin_users_route } from './route/admin';
+import { admin_users_route } from './route/admin/admin_user';
+import { admin_parking_route } from './route/admin/admin_parking';
 import jwt from '@elysiajs/jwt';
 
 const app = new Elysia()
@@ -37,6 +38,7 @@ const app = new Elysia()
   .use(floor_route)
   .use(register_route)
   .use(login_route)
+  .use(admin_parking_route)
 
   .listen(process.env.PORT!);
 

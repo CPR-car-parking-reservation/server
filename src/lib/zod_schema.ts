@@ -7,6 +7,7 @@ export const validate_user_create = z
     password: z.string().min(8, { message: 'Password must be atleast 8 characters long' }),
     confirm_password: z.string().min(8, { message: 'Password must be atleast 8 characters long' }),
     name: z.string().min(3, { message: 'Name cannot be empty' }),
+    surname: z.string().min(3, { message: 'Surname cannot be empty' }),
   })
   .refine((data) => data.password == data.confirm_password, {
     message: 'Passwords do not match',
@@ -18,7 +19,8 @@ export const validate_login = z.object({
 });
 
 export const validate_user_update = z.object({
-  name: z.string().min(3, { message: 'Name cannot be empty' }),
+  name: z.string().min(1, { message: 'Name cannot be empty' }),
+  surname: z.string().min(1, { message: 'Surname cannot be empty' }),
   image: z.instanceof(File).optional(),
 });
 
@@ -67,7 +69,6 @@ export const validate_update_parking_slot = z.object({
 
 // Validation of RESERVATION
 export const validate_reservation_praking = z.object({
-  user_id: z.string({ message: 'Invalid user id' }),
   car_id: z.string({ message: 'Invalid car id' }),
   parking_slot_id: z.string({ message: 'Invalid parking slot id' }),
   start_at: z.coerce.date({ message: 'Invalid start time' }),
