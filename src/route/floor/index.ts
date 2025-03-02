@@ -3,11 +3,12 @@ import { t, Elysia } from 'elysia';
 import { validate_create_floor, validate_update_floor } from '@/lib/zod_schema';
 import { Param } from '@prisma/client/runtime/library';
 
-export const floor_route = new Elysia({ prefix: '/floor' })
-  .get('/', () => {
+export const floor_route = new Elysia({ prefix: '/floors' })
+  .get('/', async ({ set }) => {
     const prisma = new PrismaClient();
-    const floors = prisma.floor.findMany();
-    return { floors };
+    const floors = await prisma.floor.findMany();
+    set.status = 200;
+    return { data: floors, status: 200 };
   })
 
   .post(

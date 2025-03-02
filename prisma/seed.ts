@@ -53,7 +53,19 @@ async function main() {
 
   // Mock Floors
   const floors_create = await prisma.floor.createMany({
-    data: [{ floor_number: 'F1' }, { floor_number: 'F2' }],
+    //create 10 floors F1 to F10
+    data: [
+      { floor_number: 'F1' },
+      { floor_number: 'F2' },
+      { floor_number: 'F3' },
+      { floor_number: 'F4' },
+      { floor_number: 'F5' },
+      { floor_number: 'F6' },
+      { floor_number: 'F7' },
+      { floor_number: 'F8' },
+      { floor_number: 'F9' },
+      { floor_number: 'F10' },
+    ],
   });
 
   // Mock Parking Slots
