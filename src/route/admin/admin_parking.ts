@@ -21,6 +21,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         if (search) {
           filters.slot_number = {
             contains: search,
+            mode: 'insensitive',
           };
         }
 

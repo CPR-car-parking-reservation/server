@@ -2,10 +2,19 @@ import { PrismaClient } from '@prisma/client';
 import { t, Elysia } from 'elysia';
 import { validate_create_floor, validate_update_floor } from '@/lib/zod_schema';
 import { Param } from '@prisma/client/runtime/library';
+const prisma = new PrismaClient();
+import { DateTime } from 'luxon';
+
+function getDiffHours(start: string, end: string): number {
+  const startTime = DateTime.fromISO(start).setZone('Asia/Bangkok');
+  const endTime = DateTime.fromISO(end).setZone('Asia/Bangkok');
+
+  return endTime.diff(startTime, 'hours').hours;
+}
 
 export const floor_route = new Elysia({ prefix: '/floors' })
+
   .get('/', async ({ set }) => {
-    const prisma = new PrismaClient();
     const floors = await prisma.floor.findMany();
     set.status = 200;
     return { data: floors, status: 200 };
@@ -15,7 +24,6 @@ export const floor_route = new Elysia({ prefix: '/floors' })
     '/',
     async ({ body }) => {
       try {
-        const prisma = new PrismaClient();
         const { floor_number } = body;
         const validate = validate_create_floor.safeParse(body);
 
@@ -55,7 +63,6 @@ export const floor_route = new Elysia({ prefix: '/floors' })
     '/',
     async ({ body }) => {
       try {
-        const prisma = new PrismaClient();
         const { floor_number, floor_id } = body;
         const validate = validate_update_floor.safeParse(body);
 
@@ -103,7 +110,6 @@ export const floor_route = new Elysia({ prefix: '/floors' })
     '/id/:floor_id',
     async ({ params }) => {
       try {
-        const prisma = new PrismaClient();
         const { floor_id } = await params;
         const floor = await prisma.floor.findUnique({
           where: {

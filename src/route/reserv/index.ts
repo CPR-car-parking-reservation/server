@@ -2,17 +2,34 @@ import { Elysia, t } from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { validate_reservation_praking } from '@/lib/zod_schema';
 import { middleware } from '@/lib/auth';
+import { set } from 'zod';
+import { send_display, send_slot_status_to_board, send_trigger_mobile } from '@/mqtt/handler';
+// import { send_display, send_reserved_slot } from '@/mqtt/handler';
 const prisma = new PrismaClient();
 
 export const reservation_route = new Elysia({ prefix: '/reservation' })
   .use(middleware)
-  .get('/', async () => {
-    const reservation = await prisma.reservations.findMany({
-      include: {
-        parking_slots: true,
-      },
-    });
-    return { data: reservation, status: 200 };
+  .get('/user', async ({ auth_user, set }) => {
+    if (!auth_user) {
+      set.status = 401;
+      return { message: 'Unauthorized', status: 401 };
+    }
+    try {
+      const reservation = await prisma.reservations.findMany({
+        where: {
+          user_id: auth_user.id,
+        },
+        include: {
+          parking_slots: true,
+          car: true,
+        },
+      });
+      set.status = 200;
+      return { data: reservation, status: 200 };
+    } catch (e: any) {
+      set.status = 400;
+      return { message: 'Internal Server Error', status: 400 };
+    }
   })
   // .post(
   //   '/',
@@ -38,6 +55,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         return { message: 'Unauthorized', status: 401 };
       }
       const { car_id, parking_slot_id, start_at } = body;
+      console.log(body);
 
       const start_at_date = new Date(start_at);
       console.log('start_at_date', start_at_date);
@@ -52,6 +70,9 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         where: {
           id: parking_slot_id,
           status: ParkingStatus.IDLE,
+        },
+        include: {
+          floor: true,
         },
       });
 
@@ -109,6 +130,13 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         return { message: 'Update slot failed', status: 400 };
       }
 
+      send_slot_status_to_board(
+        this_slot.slot_number,
+        this_slot.floor.floor_number,
+        ParkingStatus.RESERVED
+      );
+      send_display(this_slot.slot_number, car.license_plate);
+      send_trigger_mobile();
       return { data: new_reserv, message: 'Reserv created successfully', status: 200 };
     },
     {

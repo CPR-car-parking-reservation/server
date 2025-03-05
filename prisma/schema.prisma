@@ -13,6 +13,7 @@ model Users {
     name        String
     surname     String
     password    String?
+    phone       String         @unique
     image_url   String?
     role        Role           @default(USER)
     Reservation Reservations[]
@@ -39,30 +40,37 @@ model Parking_slots {
 }
 
 model Reservations {
-    id              String        @id @default(uuid())
+    id              String            @id @default(uuid())
     user_id         String
-    created_at      DateTime      @default(now())
+    created_at      DateTime          @default(now())
     start_at        DateTime?
     end_at          DateTime?
-    updated_at      DateTime      @updatedAt
-    user            Users         @relation(fields: [user_id], references: [id])
+    updated_at      DateTime          @updatedAt
+    user            Users             @relation(fields: [user_id], references: [id])
     parking_slot_id String
-    parking_slots   Parking_slots @relation(fields: [parking_slot_id], references: [id])
+    parking_slots   Parking_slots     @relation(fields: [parking_slot_id], references: [id])
     car_id          String
-    car             Cars          @relation(fields: [car_id], references: [id])
+    car             Cars              @relation(fields: [car_id], references: [id])
+    price           Float?
+    status          ReservationStatus @default(WAITING)
+}
+
+model Setting {
+    id          String @id @default(uuid())
+    charge_rate Float
 }
 
 model Cars {
-    id           String         @id @default(uuid())
-    car_number   String         @unique
-    car_model    String
-    car_type     String
-    image_url    String
-    created_at   DateTime       @default(now())
-    updated_at   DateTime       @updatedAt
-    user_id      String
-    user         Users          @relation(fields: [user_id], references: [id])
-    Reservations Reservations[]
+    id            String         @id @default(uuid())
+    license_plate String         @unique
+    car_model     String
+    car_type      String
+    image_url     String
+    created_at    DateTime       @default(now())
+    updated_at    DateTime       @updatedAt
+    user_id       String
+    user          Users          @relation(fields: [user_id], references: [id])
+    Reservations  Reservations[]
 }
 
 enum ParkingStatus {
@@ -76,4 +84,12 @@ enum Role {
     USER
     ADMIN
     ENGINEER
+}
+
+enum ReservationStatus {
+    WAITING
+    OCCUPIED
+    SUCCESS
+    CANCEL
+    EXPIRED
 }

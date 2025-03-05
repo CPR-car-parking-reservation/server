@@ -1,0 +1,78 @@
+import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
+import { parking_data } from './type';
+import { send_display, send_trigger_mobile } from '@/mqtt/handler';
+
+export const update_slot = async (parking: parking_data) => {
+  const prisma = new PrismaClient();
+  const status = parking.status as ParkingStatus;
+  const this_slot = await prisma.parking_slots.findUnique({
+    where: {
+      slot_number: parking.name.trim(),
+    },
+  });
+
+  await prisma.parking_slots.update({
+    where: {
+      id: this_slot?.id,
+    },
+    data: {
+      status: status,
+    },
+  });
+
+  const this_reservation = await prisma.reservations.findFirst({
+    where: {
+      parking_slot_id: this_slot?.id,
+      end_at: null,
+    },
+  });
+  if (!this_reservation) {
+    console.log('Reservation not found');
+    return;
+  }
+  if (status === ParkingStatus.FULL) {
+    await prisma.reservations.update({
+      where: {
+        id: this_reservation.id,
+      },
+      data: {
+        status: ReservationStatus.OCCUPIED,
+      },
+    });
+  }
+
+  if (status === ParkingStatus.IDLE) {
+    const charge_rate = await prisma.setting.findMany();
+    charge_rate[0].charge_rate;
+
+    const start_at = this_reservation.start_at;
+    if (!start_at) return;
+    const end_at = new Date();
+    await prisma.reservations.update({
+      where: {
+        id: this_reservation.id,
+      },
+      data: {
+        end_at: end_at,
+        price: await calculate_charge(start_at, end_at, charge_rate[0].charge_rate),
+        status: ReservationStatus.SUCCESS,
+      },
+    });
+
+    send_display(parking.name, '');
+  }
+  console.log('✅ Sent parking slot status');
+  send_trigger_mobile();
+};
+
+const calculate_charge = async (start_at: Date, end_at: Date, charge_rate: number) => {
+  const diff = end_at.getTime() - start_at.getTime();
+  const diff_hour = diff / (1000 * 60 * 60);
+  console.log('diff_hour', diff_hour);
+  const round = Math.ceil(diff_hour);
+  if (round <= 1) {
+    return charge_rate;
+  }
+  return Math.round(diff_hour) * charge_rate;
+  //   return diff_hour * charge_rate;
+};

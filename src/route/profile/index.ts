@@ -82,11 +82,25 @@ export const users_route = new Elysia({ prefix: '/profile' })
           return { message: 'User not found', status: 404 };
         }
 
-        const { name, surname, image } = body;
+        const { name, surname, image, phone } = body;
         const validate = validate_user_update.safeParse(body);
         if (!validate.success) {
           set.status = 400;
           return { message: validate.error.issues[0].message, status: 400 };
+        }
+
+        const is_phone_exist = await prisma.users.findFirst({
+          where: {
+            phone,
+            id: {
+              not: auth_user.id,
+            },
+          },
+        });
+
+        if (is_phone_exist) {
+          set.status = 400;
+          return { message: 'Phone number already exist', status: 400 };
         }
 
         if (body.image == null || body.image == undefined) {
@@ -97,6 +111,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
             data: {
               name,
               surname,
+              phone,
             },
           });
           set.status = 200;
@@ -115,6 +130,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           data: {
             name,
             surname,
+            phone,
             image_url: upload_result ? upload_result.url : this_user.image_url,
           },
         });
@@ -129,6 +145,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
       body: t.Object({
         name: t.String(),
         surname: t.String(),
+        phone: t.String(),
         image: t.Optional(t.File()),
       }),
     }
@@ -178,7 +195,8 @@ export const users_route = new Elysia({ prefix: '/profile' })
         set.status = 200;
         return { message: 'Password reset successfully', status: 200 };
       } catch (e: any) {
-        return { message: 'Internal Server Error' };
+        set.status = 500;
+        return { message: 'Internal Server Error', status: 500 };
       }
     },
     {

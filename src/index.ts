@@ -11,6 +11,10 @@ import { login_route } from './route/auth/login';
 import { admin_users_route } from './route/admin/admin_user';
 import { admin_parking_route } from './route/admin/admin_parking';
 import jwt from '@elysiajs/jwt';
+import '@/mqtt/handler';
+import { PrismaClient } from '@prisma/client';
+
+export const clients = new Set();
 
 const app = new Elysia()
   .onError(({ code, error }) => {
@@ -43,3 +47,7 @@ const app = new Elysia()
   .listen(process.env.PORT!);
 
 console.log(`Server running on port ${process.env.PORT}`);
+
+const diffInHours = (date1: any, date2: any) => {
+  return Math.abs(Number(new Date(date2)) - Number(new Date(date1))) / (1000 * 60 * 60);
+};

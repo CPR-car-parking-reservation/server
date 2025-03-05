@@ -14,6 +14,7 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
       }
 
       const { search } = query;
+      console.log('query', query);
 
       const prisma = new PrismaClient();
       const users = await prisma.users.findMany({
@@ -26,6 +27,7 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
             { name: { contains: search, mode: 'insensitive' } },
             { surname: { contains: search, mode: 'insensitive' } },
           ],
+          email: { not: 'admin' },
         },
         include: { car: true },
       });

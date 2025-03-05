@@ -3,29 +3,41 @@ import { PrismaClient } from '@prisma/client';
 import { validate_user_create } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import bcrypt from 'bcrypt';
-
+const prisma = new PrismaClient();
 export const register_route = new Elysia({ prefix: '/register' }).post(
   '/',
-  async ({ body }) => {
+  async ({ body, set }) => {
     try {
-      const { email, password, confirm_password, surname, name } = body;
+      const { email, password, confirm_password, surname, name, phone } = body;
       const validate = validate_user_create.safeParse(body);
 
       //console.log(validate);
 
       if (!validate.success) {
+        set.status = 400;
         return { message: validate.error.issues[0].message };
       }
       const hashed_password = await bcrypt.hash(password, 10);
 
-      const prisma = new PrismaClient();
       const is_user_exist = await prisma.users.findFirst({
         where: {
           email,
         },
       });
       if (is_user_exist) {
+        set.status = 400;
         return { message: 'User already exist' };
+      }
+
+      const is_phone_exist = await prisma.users.findFirst({
+        where: {
+          phone,
+        },
+      });
+
+      if (is_phone_exist) {
+        set.status = 400;
+        return { message: 'Phone number already exist' };
       }
 
       const new_user = await prisma.users.create({
@@ -33,17 +45,20 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
           email,
           password: hashed_password,
           name,
+          phone,
           surname,
           image_url: '/file/account-default.png',
         },
       });
 
+      set.status = 200;
       return {
         data: new_user,
-        message: 'User created successfully',
+        message: 'Register successfully',
         status: 200,
       };
     } catch (e: any) {
+      set.status = 400;
       return { message: 'Internal Server Error' };
     }
   },
@@ -54,6 +69,7 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
       confirm_password: t.String(),
       name: t.String(),
       surname: t.String(),
+      phone: t.String(),
     }),
   }
 );
