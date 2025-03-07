@@ -176,58 +176,58 @@ async function main() {
   const parkingSlots = await prisma.parking_slots.findMany();
   const fetch_cars = await prisma.cars.findMany();
   // Mock Reservations
-  const reservations = await prisma.reservations.createMany({
-    data: [
-      {
-        user_id: users[0].id,
-        parking_slot_id: parkingSlots[0].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
+  // const reservations = await prisma.reservations.createMany({
+  //   data: [
+  //     {
+  //       user_id: users[0].id,
+  //       parking_slot_id: parkingSlots[0].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
 
-        status: ReservationStatus.WAITING,
-      },
-      {
-        user_id: users[1].id,
-        parking_slot_id: parkingSlots[1].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
-        // start_at: new Date(thaiTime.toString()),
-        // end_at: new Date(thaiTime.toString()),
-      },
-      {
-        user_id: users[2].id,
-        parking_slot_id: parkingSlots[2].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
-        // start_at: new Date(thaiTime.toString()),
-        // end_at: new Date(thaiTime.toString()),
-      },
-      {
-        user_id: users[3].id,
-        parking_slot_id: parkingSlots[3].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
-        // start_at: new Date(thaiTime.toString()),
-        // end_at: new Date(thaiTime.toString()),
-      },
-      {
-        user_id: users[4].id,
-        parking_slot_id: parkingSlots[4].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
-        // start_at: new Date(thaiTime.toString()),
-        // end_at: new Date(thaiTime.toString()),
-      },
-      {
-        user_id: users[0].id,
-        parking_slot_id: parkingSlots[5].id,
-        car_id: fetch_cars[0].id,
-        start_at: new Date(),
-        // start_at: new Date(thaiTime.toString()),
-        // end_at: new Date(thaiTime.toString()),
-      },
-    ],
-  });
+  //       status: ReservationStatus.WAITING,
+  //     },
+  //     {
+  //       user_id: users[1].id,
+  //       parking_slot_id: parkingSlots[1].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
+  //       // start_at: new Date(thaiTime.toString()),
+  //       // end_at: new Date(thaiTime.toString()),
+  //     },
+  //     {
+  //       user_id: users[2].id,
+  //       parking_slot_id: parkingSlots[2].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
+  //       // start_at: new Date(thaiTime.toString()),
+  //       // end_at: new Date(thaiTime.toString()),
+  //     },
+  //     {
+  //       user_id: users[3].id,
+  //       parking_slot_id: parkingSlots[3].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
+  //       // start_at: new Date(thaiTime.toString()),
+  //       // end_at: new Date(thaiTime.toString()),
+  //     },
+  //     {
+  //       user_id: users[4].id,
+  //       parking_slot_id: parkingSlots[4].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
+  //       // start_at: new Date(thaiTime.toString()),
+  //       // end_at: new Date(thaiTime.toString()),
+  //     },
+  //     {
+  //       user_id: users[0].id,
+  //       parking_slot_id: parkingSlots[5].id,
+  //       car_id: fetch_cars[0].id,
+  //       start_at: new Date(),
+  //       // start_at: new Date(thaiTime.toString()),
+  //       // end_at: new Date(thaiTime.toString()),
+  //     },
+  //   ],
+  // });
 
   const setting = await prisma.setting.create({
     data: {

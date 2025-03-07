@@ -1,10 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { ParkingStatus, PrismaClient } from '@prisma/client';
+import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
 import { validate_reservation_praking } from '@/lib/zod_schema';
 import { middleware } from '@/lib/auth';
-import { set } from 'zod';
 import { send_display, send_slot_status_to_board, send_trigger_mobile } from '@/mqtt/handler';
-// import { send_display, send_reserved_slot } from '@/mqtt/handler';
 const prisma = new PrismaClient();
 
 export const reservation_route = new Elysia({ prefix: '/reservation' })
@@ -31,26 +29,10 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       return { message: 'Internal Server Error', status: 400 };
     }
   })
-  // .post(
-  //   '/',
-  //   ({ body }) => {
-  //     const { id } = body;
-  //     console.log('id', id);
-  //     if (id == '41486940-f14c-4289-b78e-a0351922916b') {
-  //       return 'open door';
-  //     }
-  //     return 'failed';
-  //   },
-  //   {
-  //     body: t.Object({
-  //       id: t.String(),
-  //     }),
-  //   }
-  // );
 
   .post(
     '/',
-    async ({ body, auth_user }) => {
+    async ({ body, auth_user, set }) => {
       if (!auth_user) {
         return { message: 'Unauthorized', status: 401 };
       }
@@ -63,7 +45,21 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       const validate = validate_reservation_praking.safeParse(body);
 
       if (!validate.success) {
+        set.status = 400;
         return { message: validate.error.issues[0].message, status: 400 };
+      }
+
+      const is_reserved = await prisma.reservations.findFirst({
+        where: {
+          user_id: auth_user.id,
+          end_at: null,
+          status: ReservationStatus.WAITING,
+        },
+      });
+
+      if (is_reserved) {
+        set.status = 400;
+        return { message: 'please finish or cancel your reservation', status: 400 };
       }
 
       const this_slot = await prisma.parking_slots.findUnique({
@@ -77,6 +73,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       });
 
       if (!this_slot) {
+        set.status = 400;
         return { message: 'This slot is not available ', status: 400 };
       }
 
@@ -87,6 +84,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       });
 
       if (!user) {
+        set.status = 400;
         return { message: 'User not found', status: 400 };
       }
 
@@ -97,6 +95,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       });
 
       if (!car) {
+        set.status = 400;
         return { message: 'Car not found', status: 400 };
       }
       console.log('user_id', auth_user.id);
@@ -114,7 +113,8 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       });
 
       if (!new_reserv) {
-        return { message: 'Create reserv failed', status: 400 };
+        set.status = 400;
+        return { message: 'Failed to create reservation', status: 400 };
       }
 
       const update_slot = await prisma.parking_slots.update({
@@ -127,7 +127,8 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       });
 
       if (!update_slot) {
-        return { message: 'Update slot failed', status: 400 };
+        set.status = 400;
+        return { message: 'Failed to update slot', status: 400 };
       }
 
       send_slot_status_to_board(
@@ -137,7 +138,8 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       );
       send_display(this_slot.slot_number, car.license_plate);
       send_trigger_mobile();
-      return { data: new_reserv, message: 'Reserv created successfully', status: 200 };
+      set.status = 200;
+      return { data: new_reserv, message: 'Reservation created successfully', status: 200 };
     },
     {
       body: t.Object({

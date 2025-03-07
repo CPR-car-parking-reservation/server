@@ -6,13 +6,13 @@ import { parking_slots_route } from '@/route/parking_slots';
 import swagger from '@elysiajs/swagger';
 import { reservation_route } from '@/route/reserv';
 import { floor_route } from '@/route/floor';
-import { register_route } from './route/auth/register';
-import { login_route } from './route/auth/login';
-import { admin_users_route } from './route/admin/admin_user';
-import { admin_parking_route } from './route/admin/admin_parking';
+import { register_route } from '@/route/auth/register';
+import { login_route } from '@/route/auth/login';
+import { admin_users_route } from '@/route/admin/admin_user';
+import { admin_parking_route } from '@/route/admin/admin_parking';
 import jwt from '@elysiajs/jwt';
 import '@/mqtt/handler';
-import { PrismaClient } from '@prisma/client';
+import { admin_reservation_route } from '@/route/admin/admin_reservation';
 
 export const clients = new Set();
 
@@ -43,6 +43,7 @@ const app = new Elysia()
   .use(register_route)
   .use(login_route)
   .use(admin_parking_route)
+  .use(admin_reservation_route)
 
   .listen(process.env.PORT!);
 
