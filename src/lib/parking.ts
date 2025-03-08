@@ -8,6 +8,9 @@ export const update_slot = async (parking: parking_data) => {
   const this_slot = await prisma.parking_slots.findUnique({
     where: {
       slot_number: parking.name.trim(),
+      NOT: {
+        status: ParkingStatus.MAINTENANCE,
+      },
     },
   });
 
@@ -71,7 +74,9 @@ export const update_slot = async (parking: parking_data) => {
 
     send_display(parking.name, '');
   }
+
   console.log('✅ Sent parking slot status');
+  prisma.$disconnect();
   send_trigger_mobile();
 };
 

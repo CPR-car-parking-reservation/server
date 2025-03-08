@@ -1,7 +1,7 @@
 // import { prisma } from '@/index';
 import { middleware } from '@/lib/auth';
 import { validate_create_parking_slot, validate_update_parking_slot } from '@/lib/zod_schema';
-import { send_trigger_mobile } from '@/mqtt/handler';
+import { send_slot_status_to_board, send_trigger_mobile } from '@/mqtt/handler';
 import { ParkingStatus, PrismaClient, ReservationStatus, Role } from '@prisma/client';
 import Elysia, { t } from 'elysia';
 
@@ -227,6 +227,13 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
               status: ReservationStatus.CANCEL,
             },
           });
+          send_slot_status_to_board(
+            updated_parking_slot.slot_number,
+            floor.floor_number,
+            'MAINTENANCE'
+          );
+        } else {
+          send_slot_status_to_board(updated_parking_slot.slot_number, floor.floor_number, 'IDLE');
         }
         prisma.$disconnect();
         send_trigger_mobile();

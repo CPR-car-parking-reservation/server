@@ -78,8 +78,10 @@ export const send_slot_status_to_board = async (
     mqtt_client.publish(publishTopic, `${floor_number}:${slot_number}:1`);
   } else if (status === 'FULL') {
     mqtt_client.publish(publishTopic, `${floor_number}:${slot_number}:0`);
-  } else {
+  } else if (status === 'RESERVED') {
     mqtt_client.publish(publishTopic, `${floor_number}:${slot_number}:2`);
+  } else {
+    mqtt_client.publish(publishTopic, `${floor_number}:${slot_number}:3`);
   }
 };
 
