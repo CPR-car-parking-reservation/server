@@ -1,10 +1,10 @@
+// import { prisma } from '@/index';
 import { middleware } from '@/lib/auth';
 import { validate_create_parking_slot, validate_update_parking_slot } from '@/lib/zod_schema';
 import { send_trigger_mobile } from '@/mqtt/handler';
 import { ParkingStatus, PrismaClient, ReservationStatus, Role } from '@prisma/client';
 import Elysia, { t } from 'elysia';
 
-const prisma = new PrismaClient();
 export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' })
   .use(middleware)
   .get(
@@ -15,6 +15,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
+        const prisma = new PrismaClient();
         const { search, floor, status } = query;
         console.log('query', query);
         const filters: any = {};
@@ -47,7 +48,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         });
 
         set.status = 200;
-
+        prisma.$disconnect();
         return { data: parking_slots, status: 200 };
       } catch (e: any) {
         return { message: 'Internal Server Error' };
@@ -70,6 +71,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
+        const prisma = new PrismaClient();
         const { floor_number, slot_number } = body;
 
         const validated_parking_slots = validate_create_parking_slot.safeParse(body);
@@ -125,7 +127,6 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
             status: 400,
           };
         }
-        console.log('floor', floor);
 
         const new_parking_slot = await prisma.parking_slots.create({
           data: {
@@ -136,6 +137,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
 
         set.status = 200;
         send_trigger_mobile();
+        prisma.$disconnect();
         return {
           message: 'parking slot created successfully',
           data: new_parking_slot,
@@ -161,13 +163,11 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
+        const prisma = new PrismaClient();
         const { floor_number, slot_number, status } = body;
         const { parking_slot_id } = params;
-        // console.log('floor_number', floor_number);
-        // console.log('slot_number', slot_number);
-        // console.log('parking_slot_id', parking_slot_id);
+
         const validated_parking_slots = validate_update_parking_slot.safeParse(body);
-        console.log('body', body);
 
         if (!validated_parking_slots.success) {
           return { message: validated_parking_slots.error.issues[0].message };
@@ -228,7 +228,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
             },
           });
         }
-
+        prisma.$disconnect();
         send_trigger_mobile();
         set.status = 200;
         return {
@@ -261,6 +261,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
       }
       try {
         const { parking_slot_id } = params;
+        const prisma = new PrismaClient();
 
         const is_parking_slot = await prisma.parking_slots.findUnique({
           where: { id: parking_slot_id },
@@ -285,6 +286,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         });
         send_trigger_mobile();
         set.status = 200;
+        prisma.$disconnect();
         return { message: 'Delete parking slot success' };
       } catch (e: any) {
         // console.log(e);

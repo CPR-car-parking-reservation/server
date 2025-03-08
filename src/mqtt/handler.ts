@@ -3,8 +3,8 @@ import { parking_data, reservation_data } from '@/lib/type';
 import { mqtt_client } from '@/mqtt/connect';
 import dotenv from 'dotenv';
 dotenv.config();
-
 import { PrismaClient, ReservationStatus } from '@prisma/client';
+
 mqtt_client.on('connect', () => {
   console.log('✅ Connected to MQTT Broker!');
   mqtt_client.subscribe(`cpr/from_board/#`, (err) => {
@@ -41,6 +41,7 @@ mqtt_client.on('message', async (topic, message) => {
         for (const slot of parking_slots) {
           send_slot_status_to_board(slot.slot_number, slot.floor.floor_number, slot.status);
         }
+        prisma.$disconnect();
       });
     } else if (topicText.startsWith('cpr/from_board/reservation')) {
       let reservation_data = Object.values(obj)[0] as unknown as reservation_data;
@@ -60,6 +61,7 @@ mqtt_client.on('message', async (topic, message) => {
         console.log('not found reservation');
         mqtt_client.publish(`cpr/from_server/reservation`, '0');
       }
+      prisma.$disconnect();
     }
   } catch (error) {
     console.error('❌ Error handling MQTT message:', error);
@@ -87,6 +89,11 @@ export const send_display = async (slot_number: string, license_plate: string) =
 };
 
 export const send_trigger_mobile = async () => {
-  const publishTopic = `cpr/from_server/trigger`;
+  const publishTopic = `cpr/from_server/trigger/user`;
   mqtt_client.publish(publishTopic, 'fetch slot');
+};
+
+export const send_trigger_mobile_admin = async (content: string) => {
+  const publishTopic = `cpr/from_server/trigger/admin`;
+  mqtt_client.publish(publishTopic, content);
 };

@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient } from '@prisma/client';
-import { jwt } from '@elysiajs/jwt';
 import bcrypt from 'bcrypt';
 
 export const login_route = new Elysia({ prefix: '/login' })
@@ -9,8 +8,8 @@ export const login_route = new Elysia({ prefix: '/login' })
     '/',
     async ({ body, set, jwt }) => {
       try {
-        const prisma = new PrismaClient();
         const { email, password } = body;
+        const prisma = new PrismaClient();
         const user = await prisma.users.findFirst({
           where: {
             email,
@@ -29,9 +28,11 @@ export const login_route = new Elysia({ prefix: '/login' })
 
         //JWT
         const token = await jwt.sign({ id: user.id });
-        console.log('token', token);
+        prisma.$disconnect();
+        set.status = 200;
         return { token: token, status: 200, role: user.role };
       } catch (e: any) {
+        set.status = 500;
         return { message: 'Internal Server Error' };
       }
     },

@@ -5,8 +5,6 @@ import { validate_reset_password, validate_user_update } from '@/lib/zod_schema'
 import { upload_file } from '@/lib/upload_file';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
-
 export const users_route = new Elysia({ prefix: '/profile' })
   .use(middleware)
 
@@ -16,7 +14,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
         set.status = 401;
         return { message: 'Unauthorized', status: 401 };
       }
-
+      const prisma = new PrismaClient();
       const user = await prisma.users.findUnique({
         omit: {
           password: true,
@@ -30,19 +28,19 @@ export const users_route = new Elysia({ prefix: '/profile' })
         return { message: 'User not found', status: 404 };
       }
       set.status = 200;
+      prisma.$disconnect();
       return { data: user, status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };
     }
   })
   .get('/cars', async ({ set, request, auth_user }) => {
-    console.log('auth_user in carsss', auth_user);
     try {
       if (!auth_user) {
         set.status = 401;
         return { message: 'Unauthorized', status: 401 };
       }
-
+      const prisma = new PrismaClient();
       const user = await prisma.users.findUnique({
         include: { car: true },
         omit: {
@@ -57,6 +55,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
         return { message: 'User not found', status: 404 };
       }
       set.status = 200;
+      prisma.$disconnect();
       return { data: user, status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };
@@ -70,7 +69,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           set.status = 401;
           return { message: 'Unauthorized', status: 401 };
         }
-
+        const prisma = new PrismaClient();
         const this_user = await prisma.users.findUnique({
           where: {
             id: auth_user.id,
@@ -115,6 +114,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
             },
           });
           set.status = 200;
+          prisma.$disconnect();
           return { data: update_user, message: 'User updated successfully', status: 200 };
         }
 
@@ -159,7 +159,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           set.status = 401;
           return { message: 'Unauthorized', status: 401 };
         }
-
+        const prisma = new PrismaClient();
         const user = await prisma.users.findUnique({
           where: {
             id: auth_user.id,
@@ -193,6 +193,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
         });
 
         set.status = 200;
+        prisma.$disconnect();
         return { message: 'Password reset successfully', status: 200 };
       } catch (e: any) {
         set.status = 500;

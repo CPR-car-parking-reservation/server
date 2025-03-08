@@ -14,9 +14,8 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
       }
 
       const { search } = query;
-      console.log('query', query);
-
       const prisma = new PrismaClient();
+
       const users = await prisma.users.findMany({
         omit: {
           password: true,
@@ -33,6 +32,7 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
       });
 
       set.status = 200;
+      prisma.$disconnect();
       return { data: users, status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };
@@ -42,31 +42,3 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
     query: t.Object({ search: t.Optional(t.String()) }),
   }
 );
-// POST Create User
-
-// .get(
-//   "/get_name_role",
-//   async ({ query }) => {
-//     const prisma = new PrismaClient();
-//     const { name, role } = query;
-
-//     const user = await prisma.users.findFirst({
-//       where: {
-//         name: name,
-//         role: role as Role,
-//       },
-//     });
-
-//     if(!user) {
-//       return { message: "User not found" };
-//     }
-
-//     return { user };
-//   },
-//   {
-//     query: t.Object({
-//       name: t.String(),
-//       role: t.String(),
-//     }),
-//   }
-// )

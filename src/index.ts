@@ -15,8 +15,9 @@ import '@/mqtt/handler';
 import { admin_reservation_route } from '@/route/admin/admin_reservation';
 import { logout_route } from './route/auth/logout';
 import { admin_dashboard_route } from './route/admin/admin_dashboard';
-
-export const clients = new Set();
+import { admin_setting_route } from './route/admin/admin_setting';
+import { cron } from '@elysiajs/cron';
+import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
 
 const app = new Elysia()
   .onError(({ code, error }) => {
@@ -35,6 +36,49 @@ const app = new Elysia()
       provider: 'swagger-ui',
     })
   )
+  .use(
+    cron({
+      name: 'heartbeat',
+      pattern: '*/1 * * * *',
+      run() {
+        const prisma = new PrismaClient();
+        console.log('Cron job running');
+
+        prisma.reservations
+          .findMany({
+            where: {
+              created_at: {
+                lte: new Date(new Date().getTime() - 60 * 60 * 1000),
+              },
+              status: ReservationStatus.WAITING,
+            },
+          })
+          .then((reservations) => {
+            reservations.forEach((reservation) => {
+              prisma.reservations
+                .update({
+                  where: {
+                    id: reservation.id,
+                  },
+                  data: {
+                    status: ReservationStatus.EXPIRED,
+                  },
+                })
+                .then(() => {
+                  prisma.parking_slots.update({
+                    where: {
+                      id: reservation.parking_slot_id,
+                    },
+                    data: {
+                      status: ParkingStatus.IDLE,
+                    },
+                  });
+                });
+            });
+          });
+      },
+    })
+  )
   .use(admin_users_route)
   .use(parking_slots_route)
   .use(file_route)
@@ -48,6 +92,7 @@ const app = new Elysia()
   .use(admin_reservation_route)
   .use(admin_dashboard_route)
   .use(logout_route)
+  .use(admin_setting_route)
 
   .listen(process.env.PORT!);
 

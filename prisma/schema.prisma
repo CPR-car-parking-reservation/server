@@ -43,7 +43,6 @@ model Reservations {
     id              String            @id @default(uuid())
     user_id         String
     created_at      DateTime          @default(now())
-    start_at        DateTime?
     end_at          DateTime?
     updated_at      DateTime          @updatedAt
     user            Users             @relation(fields: [user_id], references: [id])

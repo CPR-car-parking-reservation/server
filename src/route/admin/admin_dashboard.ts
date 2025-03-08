@@ -2,7 +2,6 @@ import { middleware } from '@/lib/auth';
 import { ParkingStatus, PrismaClient, Role } from '@prisma/client';
 import Elysia, { t } from 'elysia';
 
-const prisma = new PrismaClient();
 export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
   .use(middleware)
   .get('/total', async ({ query, set, auth_user }) => {
@@ -11,6 +10,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
+      const prisma = new PrismaClient();
       const idle_status = await prisma.parking_slots.count({
         where: {
           status: ParkingStatus.IDLE,
@@ -55,6 +55,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       };
 
       set.status = 200;
+      prisma.$disconnect();
       return { data: [total], status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };
@@ -66,8 +67,10 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
+      const prisma = new PrismaClient();
       const parking_slots = await prisma.parking_slots.findMany();
       set.status = 200;
+      prisma.$disconnect();
       return { data: parking_slots, status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };
@@ -83,10 +86,10 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
 
       try {
         const { date, order } = query;
-        console.log('query', query);
+        const prisma = new PrismaClient();
         const reservations = await prisma.reservations.findMany({
           where: {
-            start_at: {
+            created_at: {
               gte: new Date(`${date} 00:00:00`),
               lte: new Date(`${date} 23:59:59`),
             },
@@ -104,11 +107,11 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
             },
           },
           orderBy: {
-            start_at: order === 'ASC' ? 'asc' : 'desc',
+            created_at: order === 'ASC' ? 'asc' : 'desc',
           },
         });
         set.status = 200;
-        console.log('reservations', reservations);
+        prisma.$disconnect();
         return { data: reservations, status: 200 };
       } catch (e: any) {
         return { message: 'Internal Server Error' };
@@ -129,17 +132,16 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
         return { message: 'Unauthorized', status: 401 };
       }
       try {
+        const prisma = new PrismaClient();
         const { month, year, type } = query;
         const totalDays = new Date(parseInt(year), parseInt(month), 0).getDate();
-
-        console.log('query', query);
 
         //create object for each day
         let days = [];
         for (let i = 1; i <= totalDays; i++) {
           const reservation_of_day = await prisma.reservations.count({
             where: {
-              start_at: {
+              created_at: {
                 gte: new Date(`${year}-${month}-${i} 00:00:00`),
                 lte: new Date(`${year}-${month}-${i} 23:59:59`),
               },
@@ -151,7 +153,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
               price: true,
             },
             where: {
-              start_at: {
+              created_at: {
                 gte: new Date(`${year}-${month}-${i} 00:00:00`),
                 lte: new Date(`${year}-${month}-${i} 23:59:59`),
               },
@@ -172,6 +174,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
         }
 
         set.status = 200;
+        prisma.$disconnect();
         return { data: days, status: 200 };
       } catch (e: any) {
         return { message: 'Internal Server Error' };

@@ -73,7 +73,6 @@ export const validate_update_parking_slot = z.object({
 export const validate_reservation_praking = z.object({
   car_id: z.string({ message: 'Invalid car id' }),
   parking_slot_id: z.string({ message: 'Invalid parking slot id' }),
-  start_at: z.coerce.date({ message: 'Invalid start time' }),
 });
 
 // Validation of FLOOR

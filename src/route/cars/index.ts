@@ -3,8 +3,7 @@ import { t, Elysia } from 'elysia';
 import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import { middleware } from '@/lib/auth';
-const prisma = new PrismaClient();
-
+import { send_trigger_mobile_admin } from '@/mqtt/handler';
 export const cars_route = new Elysia({ prefix: '/cars' })
   .use(middleware)
   .get('/', async ({ set, auth_user }) => {
@@ -13,8 +12,10 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
+      const prisma = new PrismaClient();
       const cars = await prisma.cars.findMany();
       set.status = 200;
+      prisma.$disconnect();
       return { data: cars, status: 200 };
     } catch (e: any) {
       set.status = 400;
@@ -30,6 +31,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         return { message: 'Unauthorized', status: 401 };
       }
       try {
+        const prisma = new PrismaClient();
         const car = await prisma.cars.findUnique({
           where: {
             id: car_id,
@@ -40,7 +42,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           return { message: 'Car not found', status: 400 };
         }
         set.status = 200;
-        //return { data: [car], status: 200 };
+        prisma.$disconnect();
         return { data: car, status: 200 };
       } catch (e: any) {
         set.status = 400;
@@ -57,19 +59,20 @@ export const cars_route = new Elysia({ prefix: '/cars' })
   .get(
     '/user/:user_id',
     async ({ auth_user, set, params }) => {
-      console.log('auth_user in carsss', auth_user);
       if (!auth_user) {
         set.status = 401;
         return { message: 'Unauthorized', status: 401 };
       }
       try {
         const { user_id } = params;
+        const prisma = new PrismaClient();
         const cars = await prisma.cars.findMany({
           where: {
             user_id: user_id,
           },
         });
         set.status = 200;
+        prisma.$disconnect();
         return { data: cars, status: 200 };
       } catch (e: any) {
         set.status = 400;
@@ -97,8 +100,8 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           set.status = 400;
           return { message: validate.error.issues[0].message, status: 400 };
         }
-        console.log(body);
 
+        const prisma = new PrismaClient();
         const is_user_exit = await prisma.users.findUnique({
           where: {
             id: auth_user.id,
@@ -140,8 +143,9 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           },
         });
 
-        console.log(new_car);
+        prisma.$disconnect();
         set.status = 200;
+        send_trigger_mobile_admin('fetch user');
         return {
           data: new_car,
           message: 'Car created successfully',
@@ -170,13 +174,10 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        console.log('body', body);
-        console.log('params', params);
-
         const { car_id } = await params;
         const { license_plate, car_model, car_type } = body;
         const validate = validate_car_update.safeParse(body);
-
+        const prisma = new PrismaClient();
         const this_car = await prisma.cars.findFirst({
           where: {
             id: car_id,
@@ -243,6 +244,8 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           },
         });
         set.status = 200;
+        send_trigger_mobile_admin('fetch user');
+        prisma.$disconnect();
         return { message: 'Car updated successfully', data: updated_car, status: 200 };
       } catch (e: any) {
         set.status = 400;
@@ -270,13 +273,12 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       }
       try {
         const { car_id } = await params;
+        const prisma = new PrismaClient();
         const car = await prisma.cars.findUnique({
           where: {
             id: car_id,
           },
         });
-
-        //console.log(car);
 
         if (!car) {
           set.status = 400;
@@ -292,6 +294,8 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           },
         });
         set.status = 200;
+        prisma.$disconnect();
+        send_trigger_mobile_admin('fetch user');
         return {
           message: 'Car deleted successfully',
           status: 200,

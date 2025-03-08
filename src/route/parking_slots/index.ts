@@ -1,24 +1,16 @@
 import Elysia from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { t } from 'elysia';
-import {
-  validate_create_parking_slot,
-  validate_update_parking_slot,
-  validate_get_parking_slot,
-} from '@/lib/zod_schema';
-
-const prisma = new PrismaClient();
 
 export const parking_slots_route = new Elysia({
   prefix: '/parking_slots',
 }).get(
   '/',
   async ({ query, set }) => {
-    // console.log('query', query);
+    console.log('parking_slots_route');
     try {
       const { search, floor, status } = query;
-      console.log(query);
-
+      1;
       const filters: any = {};
 
       if (search) {
@@ -36,7 +28,7 @@ export const parking_slots_route = new Elysia({
       if (status) {
         filters.status = status as ParkingStatus;
       }
-
+      const prisma = new PrismaClient();
       const parking_slots = await prisma.parking_slots.findMany({
         where: filters,
         orderBy: {
@@ -48,7 +40,7 @@ export const parking_slots_route = new Elysia({
       });
 
       set.status = 200;
-
+      prisma.$disconnect();
       return { data: parking_slots, status: 200 };
     } catch (e: any) {
       return { message: 'Internal Server Error' };

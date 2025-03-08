@@ -2,8 +2,12 @@ import { Elysia, t } from 'elysia';
 import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
 import { validate_reservation_praking } from '@/lib/zod_schema';
 import { middleware } from '@/lib/auth';
-import { send_display, send_slot_status_to_board, send_trigger_mobile } from '@/mqtt/handler';
-const prisma = new PrismaClient();
+import {
+  send_display,
+  send_slot_status_to_board,
+  send_trigger_mobile,
+  send_trigger_mobile_admin,
+} from '@/mqtt/handler';
 
 export const reservation_route = new Elysia({ prefix: '/reservation' })
   .use(middleware)
@@ -13,6 +17,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
+      const prisma = new PrismaClient();
       const reservation = await prisma.reservations.findMany({
         where: {
           user_id: auth_user.id,
@@ -22,10 +27,12 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
           car: true,
         },
         orderBy: {
-          start_at: 'desc',
+          created_at: 'desc',
         },
       });
       set.status = 200;
+      prisma.$disconnect();
+      console.log('reservation', reservation);
       return { data: reservation, status: 200 };
     } catch (e: any) {
       set.status = 400;
@@ -39,11 +46,10 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       if (!auth_user) {
         return { message: 'Unauthorized', status: 401 };
       }
-      const { car_id, parking_slot_id, start_at } = body;
-      console.log(body);
+      const { car_id, parking_slot_id } = body;
 
-      const start_at_date = new Date(start_at);
-      console.log('start_at_date', start_at_date);
+      console.log('create reservation call');
+      console.log(body);
 
       const validate = validate_reservation_praking.safeParse(body);
 
@@ -51,7 +57,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         set.status = 400;
         return { message: validate.error.issues[0].message, status: 400 };
       }
-
+      const prisma = new PrismaClient();
       const is_reserved = await prisma.reservations.findFirst({
         where: {
           user_id: auth_user.id,
@@ -101,17 +107,12 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         set.status = 400;
         return { message: 'Car not found', status: 400 };
       }
-      console.log('user_id', auth_user.id);
-      console.log('car_id', car_id);
-      console.log('parking_slot_id', parking_slot_id);
-      console.log('start_at', start_at);
 
       const new_reserv = await prisma.reservations.create({
         data: {
           user_id: auth_user.id,
           parking_slot_id,
           car_id,
-          start_at: start_at_date,
         },
       });
 
@@ -141,14 +142,16 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       );
       send_display(this_slot.slot_number, car.license_plate);
       send_trigger_mobile();
+      send_trigger_mobile_admin('fetch reservation');
+      send_trigger_mobile_admin('fetch slot');
       set.status = 200;
+      prisma.$disconnect();
       return { data: new_reserv, message: 'Reservation created successfully', status: 200 };
     },
     {
       body: t.Object({
         car_id: t.String(),
         parking_slot_id: t.String(),
-        start_at: t.String(),
       }),
     }
   )
@@ -158,6 +161,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
     }
     console.log('cancel reservation call');
     const { reservation_id } = params;
+    const prisma = new PrismaClient();
     const reservation = await prisma.reservations.findUnique({
       where: {
         id: reservation_id,
@@ -206,13 +210,15 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       set.status = 400;
       return { message: 'Failed to cancel reservation', status: 400 };
     }
-
+    prisma.$disconnect();
     send_slot_status_to_board(
       reservation.parking_slots.slot_number,
       reservation.parking_slots.floor.floor_number,
       ParkingStatus.IDLE
     );
     send_display(reservation.parking_slots.slot_number, '');
+    send_trigger_mobile_admin('fetch reservation');
+    send_trigger_mobile_admin('fetch slot');
     set.status = 200;
     return { message: 'Reservation canceled successfully', status: 200 };
   });

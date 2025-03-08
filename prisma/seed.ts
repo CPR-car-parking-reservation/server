@@ -180,7 +180,9 @@ async function main() {
 
   for (let i = 0; i < 200; i++) {
     const randomDay = Math.floor(Math.random() * 31) + 1; // เลือกวันที่ระหว่าง 1 - 31
-    const startAt = new Date(2025, 2, randomDay); // เดือนมีนาคม (index 2)
+    const randomMonth = Math.floor(Math.random() * 12); // เลือกเดือน 0 - 11
+    const startAt = new Date(2025, 2, randomDay, 8, 0, 0); // วันที่ 2025
+
     const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // +2 ชั่วโมง
     const price = (Math.random() * (60 - 20) + 20).toFixed(2); // สุ่ม 20.00 - 160.00
 
@@ -188,8 +190,8 @@ async function main() {
       user_id: users[0].id,
       parking_slot_id: parkingSlots[0].id,
       car_id: fetch_cars[0].id,
-      start_at: startAt,
       end_at: endAt,
+      created_at: startAt,
       price: parseFloat(price), // แปลงเป็น number
       status: ReservationStatus.SUCCESS,
     });

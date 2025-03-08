@@ -3,7 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import { validate_user_create } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import bcrypt from 'bcrypt';
-const prisma = new PrismaClient();
+import { send_trigger_mobile_admin } from '@/mqtt/handler';
+
 export const register_route = new Elysia({ prefix: '/register' }).post(
   '/',
   async ({ body, set }) => {
@@ -11,13 +12,12 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
       const { email, password, confirm_password, surname, name, phone } = body;
       const validate = validate_user_create.safeParse(body);
 
-      //console.log(validate);
-
       if (!validate.success) {
         set.status = 400;
         return { message: validate.error.issues[0].message };
       }
       const hashed_password = await bcrypt.hash(password, 10);
+      const prisma = new PrismaClient();
 
       const is_user_exist = await prisma.users.findFirst({
         where: {
@@ -52,6 +52,8 @@ export const register_route = new Elysia({ prefix: '/register' }).post(
       });
 
       set.status = 200;
+      send_trigger_mobile_admin('fetch user');
+      prisma.$disconnect();
       return {
         data: new_user,
         message: 'Register successfully',

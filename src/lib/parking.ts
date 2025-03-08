@@ -55,7 +55,7 @@ export const update_slot = async (parking: parking_data) => {
     const charge_rate = await prisma.setting.findMany();
     const float_charge_rate = charge_rate[0].charge_rate;
 
-    const start_at = this_reservation.start_at;
+    const start_at = this_reservation.created_at;
     if (!start_at) return;
     const end_at = new Date();
     await prisma.reservations.update({
