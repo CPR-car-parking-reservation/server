@@ -4,6 +4,7 @@ import { validate_car_create, validate_car_update } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import { middleware } from '@/lib/auth';
 import { send_trigger_mobile_admin } from '@/mqtt/handler';
+import { prisma } from '@/index';
 export const cars_route = new Elysia({ prefix: '/cars' })
   .use(middleware)
   .get('/', async ({ set, auth_user }) => {
@@ -12,7 +13,6 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
-      const prisma = new PrismaClient();
       const cars = await prisma.cars.findMany();
       set.status = 200;
       prisma.$disconnect();
@@ -31,7 +31,6 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const prisma = new PrismaClient();
         const car = await prisma.cars.findUnique({
           where: {
             id: car_id,
@@ -65,7 +64,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       }
       try {
         const { user_id } = params;
-        const prisma = new PrismaClient();
+
         const cars = await prisma.cars.findMany({
           where: {
             user_id: user_id,
@@ -101,7 +100,6 @@ export const cars_route = new Elysia({ prefix: '/cars' })
           return { message: validate.error.issues[0].message, status: 400 };
         }
 
-        const prisma = new PrismaClient();
         const is_user_exit = await prisma.users.findUnique({
           where: {
             id: auth_user.id,
@@ -177,7 +175,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
         const { car_id } = await params;
         const { license_plate, car_model, car_type } = body;
         const validate = validate_car_update.safeParse(body);
-        const prisma = new PrismaClient();
+
         const this_car = await prisma.cars.findFirst({
           where: {
             id: car_id,
@@ -273,7 +271,7 @@ export const cars_route = new Elysia({ prefix: '/cars' })
       }
       try {
         const { car_id } = await params;
-        const prisma = new PrismaClient();
+
         const car = await prisma.cars.findUnique({
           where: {
             id: car_id,

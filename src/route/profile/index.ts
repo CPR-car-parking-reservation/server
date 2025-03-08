@@ -4,6 +4,7 @@ import { middleware } from '@/lib/auth';
 import { validate_reset_password, validate_user_update } from '@/lib/zod_schema';
 import { upload_file } from '@/lib/upload_file';
 import bcrypt from 'bcrypt';
+import { prisma } from '@/index';
 
 export const users_route = new Elysia({ prefix: '/profile' })
   .use(middleware)
@@ -14,7 +15,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
         set.status = 401;
         return { message: 'Unauthorized', status: 401 };
       }
-      const prisma = new PrismaClient();
+
       const user = await prisma.users.findUnique({
         omit: {
           password: true,
@@ -40,7 +41,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
         set.status = 401;
         return { message: 'Unauthorized', status: 401 };
       }
-      const prisma = new PrismaClient();
+
       const user = await prisma.users.findUnique({
         include: { car: true },
         omit: {
@@ -69,7 +70,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           set.status = 401;
           return { message: 'Unauthorized', status: 401 };
         }
-        const prisma = new PrismaClient();
+
         const this_user = await prisma.users.findUnique({
           where: {
             id: auth_user.id,
@@ -159,7 +160,7 @@ export const users_route = new Elysia({ prefix: '/profile' })
           set.status = 401;
           return { message: 'Unauthorized', status: 401 };
         }
-        const prisma = new PrismaClient();
+
         const user = await prisma.users.findUnique({
           where: {
             id: auth_user.id,

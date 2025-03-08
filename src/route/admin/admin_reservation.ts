@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient, Role } from '@prisma/client';
 import { middleware } from '@/lib/auth';
+import { prisma } from '@/index';
 
 export const admin_reservation_route = new Elysia({ prefix: '/admin/reservation' })
   .use(middleware)
@@ -10,7 +11,6 @@ export const admin_reservation_route = new Elysia({ prefix: '/admin/reservation'
       return { message: 'Unauthorized', status: 401 };
     }
     try {
-      const prisma = new PrismaClient();
       const reservation = await prisma.reservations.findMany();
       set.status = 200;
 

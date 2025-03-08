@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient, Role } from '@prisma/client';
 import { middleware } from '@/lib/auth';
+import { prisma } from '@/index';
 
 export const admin_setting_route = new Elysia({ prefix: '/admin/setting/price' })
   .use(middleware)
@@ -9,7 +10,7 @@ export const admin_setting_route = new Elysia({ prefix: '/admin/setting/price' }
       set.status = 401;
       return { message: 'Unauthorized', status: 401 };
     }
-    const prisma = new PrismaClient();
+
     const setting = await prisma.setting.findMany();
     set.status = 200;
     prisma.$disconnect();
@@ -24,7 +25,7 @@ export const admin_setting_route = new Elysia({ prefix: '/admin/setting/price' }
       }
       try {
         const { charge_rate } = body;
-        const prisma = new PrismaClient();
+
         const this_charge_rate = await prisma.setting.findMany();
 
         await prisma.setting.update({

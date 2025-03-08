@@ -19,6 +19,7 @@ import { admin_setting_route } from './route/admin/admin_setting';
 import { cron } from '@elysiajs/cron';
 import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
 
+export const prisma = new PrismaClient();
 const app = new Elysia()
   .onError(({ code, error }) => {
     console.log(error);
@@ -97,7 +98,3 @@ const app = new Elysia()
   .listen(process.env.PORT!);
 
 console.log(`Server running on port ${process.env.PORT}`);
-
-const diffInHours = (date1: any, date2: any) => {
-  return Math.abs(Number(new Date(date2)) - Number(new Date(date1))) / (1000 * 60 * 60);
-};

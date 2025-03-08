@@ -1,4 +1,5 @@
 // import { prisma } from '@/index';
+import { prisma } from '@/index';
 import { middleware } from '@/lib/auth';
 import { validate_create_parking_slot, validate_update_parking_slot } from '@/lib/zod_schema';
 import { send_slot_status_to_board, send_trigger_mobile } from '@/mqtt/handler';
@@ -15,7 +16,6 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const prisma = new PrismaClient();
         const { search, floor, status } = query;
         console.log('query', query);
         const filters: any = {};
@@ -71,7 +71,6 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const prisma = new PrismaClient();
         const { floor_number, slot_number } = body;
 
         const validated_parking_slots = validate_create_parking_slot.safeParse(body);
@@ -163,7 +162,6 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const prisma = new PrismaClient();
         const { floor_number, slot_number, status } = body;
         const { parking_slot_id } = params;
 
@@ -268,7 +266,6 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
       }
       try {
         const { parking_slot_id } = params;
-        const prisma = new PrismaClient();
 
         const is_parking_slot = await prisma.parking_slots.findUnique({
           where: { id: parking_slot_id },

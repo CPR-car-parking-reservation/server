@@ -1,3 +1,4 @@
+import { prisma } from '@/index';
 import { middleware } from '@/lib/auth';
 import { ParkingStatus, PrismaClient, Role } from '@prisma/client';
 import Elysia, { t } from 'elysia';
@@ -10,7 +11,6 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
-      const prisma = new PrismaClient();
       const idle_status = await prisma.parking_slots.count({
         where: {
           status: ParkingStatus.IDLE,
@@ -67,7 +67,6 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
-      const prisma = new PrismaClient();
       const parking_slots = await prisma.parking_slots.findMany();
       set.status = 200;
       prisma.$disconnect();
@@ -86,7 +85,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
 
       try {
         const { date, order } = query;
-        const prisma = new PrismaClient();
+
         const reservations = await prisma.reservations.findMany({
           where: {
             created_at: {
@@ -132,7 +131,6 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const prisma = new PrismaClient();
         const { month, year, type } = query;
         const totalDays = new Date(parseInt(year), parseInt(month), 0).getDate();
 

@@ -8,6 +8,7 @@ import {
   send_trigger_mobile,
   send_trigger_mobile_admin,
 } from '@/mqtt/handler';
+import { prisma } from '@/index';
 
 export const reservation_route = new Elysia({ prefix: '/reservation' })
   .use(middleware)
@@ -17,7 +18,6 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       return { message: 'Unauthorized', status: 401 };
     }
     try {
-      const prisma = new PrismaClient();
       const reservation = await prisma.reservations.findMany({
         where: {
           user_id: auth_user.id,
@@ -57,7 +57,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         set.status = 400;
         return { message: validate.error.issues[0].message, status: 400 };
       }
-      const prisma = new PrismaClient();
+
       const is_reserved = await prisma.reservations.findFirst({
         where: {
           user_id: auth_user.id,
@@ -161,7 +161,7 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
     }
     console.log('cancel reservation call');
     const { reservation_id } = params;
-    const prisma = new PrismaClient();
+
     const reservation = await prisma.reservations.findUnique({
       where: {
         id: reservation_id,

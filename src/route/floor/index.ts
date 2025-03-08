@@ -3,6 +3,7 @@ import { t, Elysia } from 'elysia';
 import { validate_create_floor, validate_update_floor } from '@/lib/zod_schema';
 import { Param } from '@prisma/client/runtime/library';
 import { DateTime } from 'luxon';
+import { prisma } from '@/index';
 
 function getDiffHours(start: string, end: string): number {
   const startTime = DateTime.fromISO(start).setZone('Asia/Bangkok');
@@ -14,7 +15,6 @@ function getDiffHours(start: string, end: string): number {
 export const floor_route = new Elysia({ prefix: '/floors' })
 
   .get('/', async ({ set }) => {
-    const prisma = new PrismaClient();
     const floors = await prisma.floor.findMany();
     set.status = 200;
     prisma.$disconnect();
@@ -31,7 +31,7 @@ export const floor_route = new Elysia({ prefix: '/floors' })
         if (!validate.success) {
           return { message: validate.error.issues[0].message };
         }
-        const prisma = new PrismaClient();
+
         const is_floor_exist = await prisma.floor.findFirst({
           where: {
             floor_number,

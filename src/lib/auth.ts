@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient, Role } from '@prisma/client';
 import { Context } from 'elysia';
+import { prisma } from '..';
 
 export const middleware = new Elysia().derive(
   { as: 'scoped' },
@@ -18,7 +19,6 @@ export const middleware = new Elysia().derive(
       return { auth_user: null };
     }
 
-    const prisma = new PrismaClient();
     const user = await prisma.users.findFirst({
       where: {
         id: auth_user.id,

@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia';
 import { PrismaClient, Role } from '@prisma/client';
 import { middleware } from '@/lib/auth';
 import { log } from 'console';
+import { prisma } from '@/index';
 
 export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middleware).get(
   '/',
@@ -14,7 +15,6 @@ export const admin_users_route = new Elysia({ prefix: 'admin/users' }).use(middl
       }
 
       const { search } = query;
-      const prisma = new PrismaClient();
 
       const users = await prisma.users.findMany({
         omit: {

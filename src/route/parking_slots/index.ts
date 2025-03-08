@@ -1,13 +1,13 @@
 import Elysia from 'elysia';
 import { ParkingStatus, PrismaClient } from '@prisma/client';
 import { t } from 'elysia';
+import { prisma } from '@/index';
 
 export const parking_slots_route = new Elysia({
   prefix: '/parking_slots',
 }).get(
   '/',
   async ({ query, set }) => {
-    console.log('parking_slots_route');
     try {
       const { search, floor, status } = query;
       1;
@@ -28,7 +28,7 @@ export const parking_slots_route = new Elysia({
       if (status) {
         filters.status = status as ParkingStatus;
       }
-      const prisma = new PrismaClient();
+
       const parking_slots = await prisma.parking_slots.findMany({
         where: filters,
         orderBy: {

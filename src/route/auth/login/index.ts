@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { prisma } from '@/index';
 
 export const login_route = new Elysia({ prefix: '/login' })
   // GET Users
@@ -9,7 +10,7 @@ export const login_route = new Elysia({ prefix: '/login' })
     async ({ body, set, jwt }) => {
       try {
         const { email, password } = body;
-        const prisma = new PrismaClient();
+
         const user = await prisma.users.findFirst({
           where: {
             email,

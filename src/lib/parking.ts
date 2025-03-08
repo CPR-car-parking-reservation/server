@@ -1,9 +1,9 @@
 import { ParkingStatus, PrismaClient, ReservationStatus } from '@prisma/client';
 import { parking_data } from './type';
 import { send_display, send_trigger_mobile } from '@/mqtt/handler';
+import { prisma } from '..';
 
 export const update_slot = async (parking: parking_data) => {
-  const prisma = new PrismaClient();
   const status = parking.status as ParkingStatus;
   const this_slot = await prisma.parking_slots.findUnique({
     where: {
