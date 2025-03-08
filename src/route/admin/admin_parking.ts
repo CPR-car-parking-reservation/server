@@ -1,6 +1,7 @@
 import { middleware } from '@/lib/auth';
 import { validate_create_parking_slot, validate_update_parking_slot } from '@/lib/zod_schema';
-import { ParkingStatus, PrismaClient, Role } from '@prisma/client';
+import { send_trigger_mobile } from '@/mqtt/handler';
+import { ParkingStatus, PrismaClient, ReservationStatus, Role } from '@prisma/client';
 import Elysia, { t } from 'elysia';
 
 const prisma = new PrismaClient();
@@ -60,6 +61,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
       }),
     }
   )
+
   .post(
     '/',
     async ({ body, set, auth_user }) => {
@@ -133,6 +135,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         });
 
         set.status = 200;
+        send_trigger_mobile();
         return {
           message: 'parking slot created successfully',
           data: new_parking_slot,
@@ -158,12 +161,13 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         return { message: 'Unauthorized', status: 401 };
       }
       try {
-        const { floor_number, slot_number } = body;
+        const { floor_number, slot_number, status } = body;
         const { parking_slot_id } = params;
         // console.log('floor_number', floor_number);
         // console.log('slot_number', slot_number);
         // console.log('parking_slot_id', parking_slot_id);
         const validated_parking_slots = validate_update_parking_slot.safeParse(body);
+        console.log('body', body);
 
         if (!validated_parking_slots.success) {
           return { message: validated_parking_slots.error.issues[0].message };
@@ -202,11 +206,33 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
           data: {
             slot_number: slot_number,
             floor_id: floor.id,
+            status: status == 'MAINTENANCE' ? ParkingStatus.MAINTENANCE : ParkingStatus.IDLE,
           },
         });
+        if (status == 'MAINTENANCE') {
+          await prisma.reservations.updateMany({
+            where: {
+              parking_slot_id: parking_slot_id,
+              end_at: null,
+              OR: [
+                {
+                  status: ReservationStatus.OCCUPIED,
+                },
+                {
+                  status: ReservationStatus.WAITING,
+                },
+              ],
+            },
+            data: {
+              status: ReservationStatus.CANCEL,
+            },
+          });
+        }
+
+        send_trigger_mobile();
         set.status = 200;
         return {
-          message: 'parking slot created successfully',
+          message: 'parking slot updated successfully',
           data: updated_parking_slot,
           status: 200,
         };
@@ -219,6 +245,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
       body: t.Object({
         slot_number: t.String(),
         floor_number: t.String(),
+        status: t.String(),
       }),
       params: t.Object({
         parking_slot_id: t.String(),
@@ -256,7 +283,7 @@ export const admin_parking_route = new Elysia({ prefix: '/admin/parking_slots' }
         await prisma.parking_slots.delete({
           where: { id: parking_slot_id },
         });
-
+        send_trigger_mobile();
         set.status = 200;
         return { message: 'Delete parking slot success' };
       } catch (e: any) {

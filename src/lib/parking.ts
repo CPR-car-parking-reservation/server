@@ -24,8 +24,17 @@ export const update_slot = async (parking: parking_data) => {
     where: {
       parking_slot_id: this_slot?.id,
       end_at: null,
+      OR: [
+        {
+          status: ReservationStatus.OCCUPIED,
+        },
+        {
+          status: ReservationStatus.WAITING,
+        },
+      ],
     },
   });
+  console.log('this_reservation', this_reservation);
   if (!this_reservation) {
     console.log('Reservation not found');
     return;
@@ -42,8 +51,9 @@ export const update_slot = async (parking: parking_data) => {
   }
 
   if (status === ParkingStatus.IDLE) {
+    console.log('🚗 Parking slot is empty');
     const charge_rate = await prisma.setting.findMany();
-    charge_rate[0].charge_rate;
+    const float_charge_rate = charge_rate[0].charge_rate;
 
     const start_at = this_reservation.start_at;
     if (!start_at) return;
@@ -54,7 +64,7 @@ export const update_slot = async (parking: parking_data) => {
       },
       data: {
         end_at: end_at,
-        price: await calculate_charge(start_at, end_at, charge_rate[0].charge_rate),
+        price: await calculate_charge(start_at, end_at, float_charge_rate),
         status: ReservationStatus.SUCCESS,
       },
     });
@@ -73,6 +83,9 @@ const calculate_charge = async (start_at: Date, end_at: Date, charge_rate: numbe
   if (round <= 1) {
     return charge_rate;
   }
-  return Math.round(diff_hour) * charge_rate;
+  console.log('charge_rate', charge_rate);
+  const price = Math.round(diff_hour) * charge_rate;
+  console.log('price', price);
+  return price;
   //   return diff_hour * charge_rate;
 };

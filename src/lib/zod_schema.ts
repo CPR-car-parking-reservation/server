@@ -66,6 +66,7 @@ export const validate_get_parking_slot = z.object({
 export const validate_update_parking_slot = z.object({
   slot_number: z.string({ message: 'Slot number cannot be empty' }),
   floor_number: z.string({ message: 'Floor number cannot be empty' }),
+  status: z.enum(['IDLE', 'FULL', 'RESERVED', 'MAINTENANCE', 'AVAILABLE']).optional(),
 });
 
 // Validation of RESERVATION

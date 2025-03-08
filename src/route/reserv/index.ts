@@ -21,6 +21,9 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
           parking_slots: true,
           car: true,
         },
+        orderBy: {
+          start_at: 'desc',
+        },
       });
       set.status = 200;
       return { data: reservation, status: 200 };
@@ -148,4 +151,68 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         start_at: t.String(),
       }),
     }
-  );
+  )
+  .post('/cancel/id/:reservation_id', async ({ auth_user, set, params }) => {
+    if (!auth_user) {
+      return { message: 'Unauthorized', status: 401 };
+    }
+    console.log('cancel reservation call');
+    const { reservation_id } = params;
+    const reservation = await prisma.reservations.findUnique({
+      where: {
+        id: reservation_id,
+        user_id: auth_user.id,
+        status: ReservationStatus.WAITING,
+        end_at: null,
+      },
+      include: {
+        parking_slots: {
+          include: {
+            floor: true,
+          },
+        },
+      },
+    });
+
+    if (!reservation) {
+      set.status = 400;
+      return { message: 'Reservation not found', status: 400 };
+    }
+
+    const update_slot = await prisma.parking_slots.update({
+      where: {
+        id: reservation.parking_slot_id,
+      },
+      data: {
+        status: ParkingStatus.IDLE,
+      },
+    });
+
+    if (!update_slot) {
+      set.status = 400;
+      return { message: 'Failed to update slot', status: 400 };
+    }
+
+    const cancel_reservation = await prisma.reservations.update({
+      where: {
+        id: reservation_id,
+      },
+      data: {
+        status: ReservationStatus.CANCEL,
+      },
+    });
+
+    if (!cancel_reservation) {
+      set.status = 400;
+      return { message: 'Failed to cancel reservation', status: 400 };
+    }
+
+    send_slot_status_to_board(
+      reservation.parking_slots.slot_number,
+      reservation.parking_slots.floor.floor_number,
+      ParkingStatus.IDLE
+    );
+    send_display(reservation.parking_slots.slot_number, '');
+    set.status = 200;
+    return { message: 'Reservation canceled successfully', status: 200 };
+  });

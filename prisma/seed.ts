@@ -88,13 +88,13 @@ async function main() {
   const floors = await prisma.floor.findMany();
   const parkingSlots_create = await prisma.parking_slots.createMany({
     data: [
-      { slot_number: 'A1', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'A2', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'A3', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'B1', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'B2', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'B3', status: ParkingStatus.RESERVED, floor_id: floors[0].id },
-      { slot_number: 'C1', status: ParkingStatus.RESERVED, floor_id: floors[1].id },
+      { slot_number: 'A1', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'A2', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'A3', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'B1', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'B2', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'B3', status: ParkingStatus.IDLE, floor_id: floors[0].id },
+      { slot_number: 'C1', status: ParkingStatus.IDLE, floor_id: floors[1].id },
     ],
   });
 
@@ -175,59 +175,29 @@ async function main() {
 
   const parkingSlots = await prisma.parking_slots.findMany();
   const fetch_cars = await prisma.cars.findMany();
-  // Mock Reservations
-  // const reservations = await prisma.reservations.createMany({
-  //   data: [
-  //     {
-  //       user_id: users[0].id,
-  //       parking_slot_id: parkingSlots[0].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
 
-  //       status: ReservationStatus.WAITING,
-  //     },
-  //     {
-  //       user_id: users[1].id,
-  //       parking_slot_id: parkingSlots[1].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
-  //       // start_at: new Date(thaiTime.toString()),
-  //       // end_at: new Date(thaiTime.toString()),
-  //     },
-  //     {
-  //       user_id: users[2].id,
-  //       parking_slot_id: parkingSlots[2].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
-  //       // start_at: new Date(thaiTime.toString()),
-  //       // end_at: new Date(thaiTime.toString()),
-  //     },
-  //     {
-  //       user_id: users[3].id,
-  //       parking_slot_id: parkingSlots[3].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
-  //       // start_at: new Date(thaiTime.toString()),
-  //       // end_at: new Date(thaiTime.toString()),
-  //     },
-  //     {
-  //       user_id: users[4].id,
-  //       parking_slot_id: parkingSlots[4].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
-  //       // start_at: new Date(thaiTime.toString()),
-  //       // end_at: new Date(thaiTime.toString()),
-  //     },
-  //     {
-  //       user_id: users[0].id,
-  //       parking_slot_id: parkingSlots[5].id,
-  //       car_id: fetch_cars[0].id,
-  //       start_at: new Date(),
-  //       // start_at: new Date(thaiTime.toString()),
-  //       // end_at: new Date(thaiTime.toString()),
-  //     },
-  //   ],
-  // });
+  const reservationsData = [];
+
+  for (let i = 0; i < 200; i++) {
+    const randomDay = Math.floor(Math.random() * 31) + 1; // เลือกวันที่ระหว่าง 1 - 31
+    const startAt = new Date(2025, 2, randomDay); // เดือนมีนาคม (index 2)
+    const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // +2 ชั่วโมง
+    const price = (Math.random() * (60 - 20) + 20).toFixed(2); // สุ่ม 20.00 - 160.00
+
+    reservationsData.push({
+      user_id: users[0].id,
+      parking_slot_id: parkingSlots[0].id,
+      car_id: fetch_cars[0].id,
+      start_at: startAt,
+      end_at: endAt,
+      price: parseFloat(price), // แปลงเป็น number
+      status: ReservationStatus.SUCCESS,
+    });
+  }
+
+  const reservations = await prisma.reservations.createMany({
+    data: reservationsData,
+  });
 
   const setting = await prisma.setting.create({
     data: {

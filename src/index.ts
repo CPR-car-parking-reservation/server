@@ -13,6 +13,8 @@ import { admin_parking_route } from '@/route/admin/admin_parking';
 import jwt from '@elysiajs/jwt';
 import '@/mqtt/handler';
 import { admin_reservation_route } from '@/route/admin/admin_reservation';
+import { logout_route } from './route/auth/logout';
+import { admin_dashboard_route } from './route/admin/admin_dashboard';
 
 export const clients = new Set();
 
@@ -44,6 +46,8 @@ const app = new Elysia()
   .use(login_route)
   .use(admin_parking_route)
   .use(admin_reservation_route)
+  .use(admin_dashboard_route)
+  .use(logout_route)
 
   .listen(process.env.PORT!);
 
