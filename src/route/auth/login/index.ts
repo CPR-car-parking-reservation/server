@@ -43,4 +43,12 @@ export const login_route = new Elysia({ prefix: '/login' })
         password: t.String(),
       }),
     }
-  );
+  )
+  .get('/check_role', async ({ set, auth_user }) => {
+    if (!auth_user) {
+      set.status = 401;
+      return { message: 'Unauthorized', status: 401 };
+    }
+    set.status = 200;
+    return { role: auth_user.role, status: 200 };
+  });

@@ -39,6 +39,32 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
       return { message: 'Internal Server Error', status: 400 };
     }
   })
+  .get('/qr', async ({ auth_user, set }) => {
+    if (!auth_user) {
+      set.status = 401;
+      return { message: 'Unauthorized', status: 401 };
+    }
+    try {
+      const reservation = await prisma.reservations.findFirst({
+        where: {
+          user_id: auth_user.id,
+          end_at: null,
+          status: ReservationStatus.WAITING,
+        },
+      });
+      if (!reservation) {
+        set.status = 400;
+        return { message: 'Reservation not found', status: 400 };
+      }
+      set.status = 200;
+      prisma.$disconnect();
+      console.log('reservation', reservation);
+      return { data: reservation.id, status: 200 };
+    } catch (e: any) {
+      set.status = 400;
+      return { message: 'Internal Server Error', status: 400 };
+    }
+  })
 
   .post(
     '/',
@@ -62,7 +88,14 @@ export const reservation_route = new Elysia({ prefix: '/reservation' })
         where: {
           user_id: auth_user.id,
           end_at: null,
-          status: ReservationStatus.WAITING,
+          OR: [
+            {
+              status: ReservationStatus.WAITING,
+            },
+            {
+              status: ReservationStatus.OCCUPIED,
+            },
+          ],
         },
       });
 

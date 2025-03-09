@@ -77,6 +77,7 @@ const app = new Elysia()
                 });
             });
           });
+        prisma.$disconnect();
       },
     })
   )

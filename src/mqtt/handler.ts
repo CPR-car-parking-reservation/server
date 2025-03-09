@@ -91,6 +91,7 @@ export const send_display = async (slot_number: string, license_plate: string) =
 };
 
 export const send_trigger_mobile = async () => {
+  console.log('send_trigger_mobile');
   const publishTopic = `cpr/from_server/mobile/trigger`;
   mqtt_client.publish(publishTopic, 'fetch slot');
 };
