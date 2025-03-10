@@ -11,6 +11,7 @@ async function main() {
   await prisma.parking_slots.deleteMany();
   await prisma.floor.deleteMany();
   await prisma.users.deleteMany();
+  await prisma.setting.deleteMany();
 
   // Mock Users
   const users_create = await prisma.users.createMany({
@@ -172,19 +173,25 @@ async function main() {
       },
     ],
   });
+  const setting = await prisma.setting.create({
+    data: {
+      charge_rate: 20,
+    },
+  });
 
   const parkingSlots = await prisma.parking_slots.findMany();
   const fetch_cars = await prisma.cars.findMany();
-
+  const all_user = await prisma.users.findMany();
+  const charge_rate = await prisma.setting.findFirst();
   const reservationsData = [];
 
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 5000; i++) {
     const randomDay = Math.floor(Math.random() * 31) + 1; // เลือกวันที่ระหว่าง 1 - 31
     const randomMonth = Math.floor(Math.random() * 12); // เลือกเดือน 0 - 11
-    const startAt = new Date(2025, 2, randomDay, 8, 0, 0); // วันที่ 2025
+    const startAt = new Date(2024, randomMonth, randomDay, 8, 0, 0); // วันที่ 2025
 
     const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // +2 ชั่วโมง
-    const price = (Math.random() * (60 - 20) + 20).toFixed(2); // สุ่ม 20.00 - 160.00
+    const price = Math.floor(Math.random() * 8 + 1) * (charge_rate?.charge_rate ?? 1); //random 1 - 8 คูณ charge_rate
 
     reservationsData.push({
       user_id: users[0].id,
@@ -192,19 +199,13 @@ async function main() {
       car_id: fetch_cars[0].id,
       end_at: endAt,
       created_at: startAt,
-      price: parseFloat(price), // แปลงเป็น number
+      price: price, // แปลงเป็น number
       status: ReservationStatus.SUCCESS,
     });
   }
 
   const reservations = await prisma.reservations.createMany({
     data: reservationsData,
-  });
-
-  const setting = await prisma.setting.create({
-    data: {
-      charge_rate: 20,
-    },
   });
 
   console.log('Seeding completed!');

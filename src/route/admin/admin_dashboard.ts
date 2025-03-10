@@ -132,6 +132,7 @@ export const admin_dashboard_route = new Elysia({ prefix: '/admin/dashboard' })
       }
       try {
         const { month, year, type } = query;
+        console.log('query', query);
         const totalDays = new Date(parseInt(year), parseInt(month), 0).getDate();
 
         //create object for each day

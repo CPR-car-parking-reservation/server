@@ -8,6 +8,8 @@ export const login_route = new Elysia({ prefix: '/login' })
   .post(
     '/',
     async ({ body, set, jwt }) => {
+      console.log('login route');
+      console.log('body', body);
       try {
         const { email, password } = body;
 

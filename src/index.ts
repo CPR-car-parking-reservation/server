@@ -42,7 +42,6 @@ const app = new Elysia()
       name: 'heartbeat',
       pattern: '*/1 * * * *',
       run() {
-        const prisma = new PrismaClient();
         console.log('Cron job running');
 
         prisma.reservations
@@ -77,7 +76,6 @@ const app = new Elysia()
                 });
             });
           });
-        prisma.$disconnect();
       },
     })
   )
